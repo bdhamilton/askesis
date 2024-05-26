@@ -37,6 +37,7 @@ class Record {
  */
 function getStudentRecords(user) {
   // Filter the records array for records associated with the selected student.
+  // const studentRecords = records.filter((record) => record.student === users[user]);
   const studentRecords = [];
   for (let i = 0; i < records.length; i++) {
     if (records[i].student === users[user]) {
@@ -69,42 +70,31 @@ function getStudentRecords(user) {
 
       // Counting from the end, if the next record is for today:
       if (studentRecords[recordIndex].date.getTime() === nextDay.getTime()) {
-        // Log its value, increment practice count if appropriate, and update our index.
-        console.log(nextDay.toDateString() + ": " + studentRecords[recordIndex].practiced);
-        if (studentRecords[recordIndex].practiced === true) practiceCount++;
+        // Increment practice count if appropriate, and update our index.
+        if (studentRecords[recordIndex].practiced === true) {
+          practiceCount++;
+        }
         recordIndex--;
-      } else {
-        // If there is no record for today, assume the student didn't practice.
-        // Don't update recordIndex, so we can check this one again next round.
-        console.log(nextDay.toDateString() + ": false");
       }
+
+      // If there is no record for today, assume the student didn't practice.
+      // Don't update recordIndex, so we can check this one again next round.
     }
 
     // Do the same thing for the previous week to find the trend.
     let previousPracticeCount = 0;
-
     for (let i = 7; i < 14 && recordIndex >= 0; i++) {
-      // (I'm assuming here that the records are in descending date order, but
-      // that won't always be true. This will behave differently once I'm
-      // pulling from a database anyway.)
-
-      // Update our date.
       nextDay.setDate(today.getDate() - i);
 
-      // Counting from the end, if the next record is for today:
       if (studentRecords[recordIndex].date.getTime() === nextDay.getTime()) {
-        // Log its value, increment practice count if appropriate, and update our index.
-        console.log(nextDay.toDateString() + ": " + studentRecords[recordIndex].practiced);
-        if (studentRecords[recordIndex].practiced === true) previousPracticeCount++;
+        if (studentRecords[recordIndex].practiced === true) {
+          previousPracticeCount++;
+        }
         recordIndex--;
-      } else {
-        // If there is no record for today, assume the student didn't practice.
-        // Don't update recordIndex, so we can check this one again next round.
-        console.log(nextDay.toDateString() + ": false");
-      }
+      } 
     }
 
-    // Compare practice rates and set the trend.
+    // Compare practice rates and define the trend.
     let trend = '';
     if (practiceCount > previousPracticeCount) trend = "up";
     else if (practiceCount === previousPracticeCount) trend = "equal";
@@ -149,7 +139,7 @@ function getStudentRecords(user) {
         streak++;
         day.setDate(day.getDate() - 1);
       } else {
-        // Otherwise, break the loop.
+        // Otherwise, stop looking.
         break;
       }
     }
