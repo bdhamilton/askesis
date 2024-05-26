@@ -48,8 +48,8 @@ function getStudentRecords(user) {
    * Log the student's practice record for the past week.
    */
   function pastWeek() {
-    const today = new Date(2024, 04, 26);
-    let nextDay = new Date(2024, 04, 26);
+    const today = new Date(2024, 4, 26);
+    let nextDay = new Date(2024, 4, 26);
     let nextIndex = studentRecords.length - 1;
     let practiceCount = 0;
     
@@ -117,11 +117,11 @@ const records = [];
 
 // Add a dummy user and a few dummy records
 users.push(new User("Brian"));
-records.push(new Record(users[0], new Date(2024, 04, 20), true));
-records.push(new Record(users[0], new Date(2024, 04, 21), true));
-records.push(new Record(users[0], new Date(2024, 04, 23), false));
-records.push(new Record(users[0], new Date(2024, 04, 24), true));
-records.push(new Record(users[0], new Date(2024, 04, 25), true));
+records.push(new Record(users[0], new Date(2024, 4, 20), true));
+records.push(new Record(users[0], new Date(2024, 4, 21), true));
+records.push(new Record(users[0], new Date(2024, 4, 23), false));
+records.push(new Record(users[0], new Date(2024, 4, 24), true));
+records.push(new Record(users[0], new Date(2024, 4, 25), true));
 
 // Tests
 const thisStudent = getStudentRecords(0);
