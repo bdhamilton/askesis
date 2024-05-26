@@ -48,8 +48,12 @@ function getStudentRecords(user) {
    * Log the student's practice record for the past week.
    */
   function pastWeek() {
-    const today = new Date(2024, 4, 26);
-    let nextDay = new Date(2024, 4, 26);
+    // Initialize the dates we'll need
+    let today = new Date();
+    today.setHours(0, 0, 0, 0);
+    let nextDay = new Date();
+    nextDay.setHours(0, 0, 0, 0);
+
     let recordIndex = studentRecords.length - 1;
     let practiceCount = 0;
     
@@ -131,8 +135,31 @@ function getStudentRecords(user) {
     return roundedPracticeRate + "%";
   }
 
+  function streak() {
+    let streak = 0;
+    let day = new Date();
+    day.setHours(0, 0, 0, 0);
+
+    // For each record (counting from the end):
+    for (let i = studentRecords.length - 1; i >= 0; i--) {
+      let record = studentRecords[i];
+      // If the record is for the next expected date and the student practiced:
+      if (day.getTime() === record.date.getTime() && record.practiced === true) {
+        // Increment the streak count and decrement the date.
+        streak++;
+        day.setDate(day.getDate() - 1);
+      } else {
+        // Otherwise, break the loop.
+        break;
+      }
+    }
+
+    // Return the streak
+    return streak;
+  }
+
   // Allow only defined access methods
-  return { pastWeek, practiceRate };
+  return { pastWeek, practiceRate, streak };
 }
 
 // Initialize a list of users and a list of records
@@ -144,11 +171,13 @@ users.push(new User("Brian"));
 records.push(new Record(users[0], new Date(2024, 4, 10), true));
 records.push(new Record(users[0], new Date(2024, 4, 15), true));
 records.push(new Record(users[0], new Date(2024, 4, 21), true));
-records.push(new Record(users[0], new Date(2024, 4, 23), false));
-records.push(new Record(users[0], new Date(2024, 4, 24), true));
+records.push(new Record(users[0], new Date(2024, 4, 22), false));
+records.push(new Record(users[0], new Date(2024, 4, 23), true));
 records.push(new Record(users[0], new Date(2024, 4, 25), true));
+records.push(new Record(users[0], new Date(2024, 4, 26), true));
 
 // Tests
 const thisStudent = getStudentRecords(0);
 console.table(thisStudent.pastWeek());
 console.log("Your overall practice rate is " + thisStudent.practiceRate());
+console.log("Your streak: " + thisStudent.streak());
