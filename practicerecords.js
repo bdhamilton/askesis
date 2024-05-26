@@ -47,6 +47,7 @@ function getStudentRecords(user) {
 
   /**
    * Log the student's practice record for the past week.
+   * @returns {Object} {count, trend}
    */
   function pastWeek() {
     // Initialize the dates we'll need
@@ -125,6 +126,10 @@ function getStudentRecords(user) {
     return roundedPracticeRate + "%";
   }
 
+  /**
+   * Find how many days in a row the student has logged practice.
+   * @returns {number} Days of current streak
+   */
   function streak() {
     let streak = 0;
     let day = new Date();
