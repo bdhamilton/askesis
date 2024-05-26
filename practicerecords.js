@@ -50,39 +50,63 @@ function getStudentRecords(user) {
   function pastWeek() {
     const today = new Date(2024, 4, 26);
     let nextDay = new Date(2024, 4, 26);
-    let nextIndex = studentRecords.length - 1;
+    let recordIndex = studentRecords.length - 1;
     let practiceCount = 0;
     
-    // For each of the last seven days, check the student's practice record.
-    for (let i = 0; i < 7; i++) {
+    // For each of the last seven days (or as far back as the record goes),
+    // check the student's practice record.
+    for (let i = 0; i < 7 && recordIndex >= 0; i++) {
       // (I'm assuming here that the records are in descending date order, but
       // that won't always be true. This will behave differently once I'm
       // pulling from a database anyway.)
-
-      // If we're out of records to check, quit.
-      if (nextIndex < 0) {
-        console.log("This is as far back as your record goes.");
-        break;
-      }
 
       // Update our date.
       nextDay.setDate(today.getDate() - i);
 
       // Counting from the end, if the next record is for today:
-      if (studentRecords[nextIndex].date.getTime() === nextDay.getTime()) {
-        // Log its value, increment the practice count, and update our index.
-        console.log(nextDay.toDateString() + ": " + studentRecords[nextIndex].practiced);
-        if (studentRecords[nextIndex].practiced === true) practiceCount++;
-        nextIndex--;
+      if (studentRecords[recordIndex].date.getTime() === nextDay.getTime()) {
+        // Log its value, increment practice count if appropriate, and update our index.
+        console.log(nextDay.toDateString() + ": " + studentRecords[recordIndex].practiced);
+        if (studentRecords[recordIndex].practiced === true) practiceCount++;
+        recordIndex--;
       } else {
         // If there is no record for today, assume the student didn't practice.
+        // Don't update recordIndex, so we can check this one again next round.
         console.log(nextDay.toDateString() + ": false");
-        
-        // Don't update nextIndex, so we can check this one again next round.
       }
     }
 
-    console.log(`You have practiced ${practiceCount} out of the last 7 days.`);
+    // Do the same thing for the previous week to find the trend.
+    let previousPracticeCount = 0;
+
+    for (let i = 7; i < 14 && recordIndex >= 0; i++) {
+      // (I'm assuming here that the records are in descending date order, but
+      // that won't always be true. This will behave differently once I'm
+      // pulling from a database anyway.)
+
+      // Update our date.
+      nextDay.setDate(today.getDate() - i);
+
+      // Counting from the end, if the next record is for today:
+      if (studentRecords[recordIndex].date.getTime() === nextDay.getTime()) {
+        // Log its value, increment practice count if appropriate, and update our index.
+        console.log(nextDay.toDateString() + ": " + studentRecords[recordIndex].practiced);
+        if (studentRecords[recordIndex].practiced === true) previousPracticeCount++;
+        recordIndex--;
+      } else {
+        // If there is no record for today, assume the student didn't practice.
+        // Don't update recordIndex, so we can check this one again next round.
+        console.log(nextDay.toDateString() + ": false");
+      }
+    }
+
+    // Compare practice rates and set the trend.
+    let trend = '';
+    if (practiceCount > previousPracticeCount) trend = "up";
+    else if (practiceCount === previousPracticeCount) trend = "equal";
+    else trend = "down";
+
+    return { count: practiceCount, trend };
   }
 
   /**
@@ -117,7 +141,8 @@ const records = [];
 
 // Add a dummy user and a few dummy records
 users.push(new User("Brian"));
-records.push(new Record(users[0], new Date(2024, 4, 20), true));
+records.push(new Record(users[0], new Date(2024, 4, 10), true));
+records.push(new Record(users[0], new Date(2024, 4, 15), true));
 records.push(new Record(users[0], new Date(2024, 4, 21), true));
 records.push(new Record(users[0], new Date(2024, 4, 23), false));
 records.push(new Record(users[0], new Date(2024, 4, 24), true));
@@ -125,9 +150,5 @@ records.push(new Record(users[0], new Date(2024, 4, 25), true));
 
 // Tests
 const thisStudent = getStudentRecords(0);
-thisStudent.pastWeek();
+console.table(thisStudent.pastWeek());
 console.log("Your overall practice rate is " + thisStudent.practiceRate());
-
-/***
- * What's better, generally: two 
- */
