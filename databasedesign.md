@@ -7,6 +7,7 @@ I think this should be doable with two simple databases
 * user_id (pk)
 * user_name (text)
 * user_greekname (text)
+* teacher (boolean)
 
 ## practice_records
 
@@ -16,7 +17,7 @@ I think this should be doable with two simple databases
 * practiced (boolean)
 * note (longtext)
 
-## notes
+## teacher_notes
 
 * note_id (pk)
 * user_id (fk) [many to one]
