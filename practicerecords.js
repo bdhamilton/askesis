@@ -49,7 +49,7 @@ function getStudentRecords(user) {
    * Log the student's practice record for the past week.
    * @returns {Object} {count, trend}
    */
-  function pastWeek() {
+  function getWeek() {
     // Initialize the dates we'll need
     let today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -104,8 +104,19 @@ function getStudentRecords(user) {
     return { count: practiceCount, trend };
   }
 
+  getMonth(month) {
+/*
+Set month: if month not set, use this month
+Figure out how many days are in the selected month
+For each day in month:
+  Get record for selected day
+  Add record to an array
+Return records array
+*/
+  }
+
   /**
-   * Get the student's overall practice rate, expressed as a percentage.
+   * Get student's practice rate since they began, expressed as a percentage.
    * @returns {string}
    */
   function practiceRate() {
@@ -154,7 +165,7 @@ function getStudentRecords(user) {
   }
 
   // Allow only defined access methods
-  return { pastWeek, practiceRate, streak };
+  return { getWeek, practiceRate, streak };
 }
 
 // Initialize a list of users and a list of records
@@ -173,6 +184,6 @@ records.push(new Record(users[0], new Date(2024, 4, 26), true));
 
 // Tests
 const thisStudent = getStudentRecords(0);
-console.table(thisStudent.pastWeek());
+console.table(thisStudent.getWeek());
 console.log("Your overall practice rate is " + thisStudent.practiceRate());
 console.log("Your streak: " + thisStudent.streak());
