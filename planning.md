@@ -7,6 +7,7 @@ This app should be able to:
 * Display a student's practice record
   * In calendar form
   * In data form (streak count, record for last week, record for last month, percentage for class period)
+    * Already drafted
 * Allow students to update their practice record
   * Mark that they've practiced
   * Add notes to a particular practice session

@@ -13,7 +13,8 @@ I think this should be doable with two simple databases
 
 * record_id (pk)
 * user_id (fk) [many to one]
-* date (number)
+* date (number) 
+  * Do I need to split this into year, month, day for ease of access?
 * practiced (boolean)
 * note (longtext)
 
