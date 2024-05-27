@@ -15,9 +15,36 @@ This app should be able to:
 * Allow teacher to add private notes to a student's account
   * Also _public_ notes?
 
-Here's a sketch of the [database design](./databasedesign.md). Here's a mockup of the [student view](./mockup.html) and the [teacher view](./mockup-backend.html).
+Here's a mockup of the [student view](./mockup.html) and the [teacher view](./mockup-backend.html).
 
 ## Notes
 
 * The code to display a student's record should be reusable for both the student and the teacher. What changes is (1) a student can only see their own record, while the teacher can see everybody's; and (2) a student can edit their record, while the teacher needs only to read.
 * The core of the entire program is a module that reads and updates a student's practice record. I should be able to write that now, given what I already know, except that I'll want to store the information in a database.
+
+## Database design
+
+### users
+
+* user_id (pk)
+* user_name (text)
+* user_greekname (text)
+* teacher (boolean)
+
+### practice_records
+
+* record_id (pk)
+* user_id (fk) [many to one]
+* date (number) 
+  * Do I need to split this into year, month, day for ease of access?
+* practiced (boolean)
+* note (longtext)
+
+### teacher_notes
+
+* note_id (pk)
+* user_id (fk) [many to one]
+* date (number)
+* note_title (text)
+* note (longtext)
+* private (boolean)
