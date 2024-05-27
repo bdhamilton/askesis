@@ -111,7 +111,7 @@ Figure out how many days are in the selected month
 For each day in month:
   Get record for selected day
   Add record to an array
-Return records array
+Return { month, recordsArray, practiceCount }
 */
   }
 
