@@ -104,7 +104,7 @@ function getStudentRecords(user) {
     return { count: practiceCount, trend };
   }
 
-  getMonth(month) {
+  function getMonth(month) {
 /*
 Set month: if month not set, use this month
 Figure out how many days are in the selected month
