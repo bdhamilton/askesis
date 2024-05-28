@@ -27,24 +27,26 @@ Here's a mockup of the [student view](./mockup.html) and the [teacher view](./mo
 ### users
 
 * user_id (pk)
-* user_name (text)
+* user_firstname (text)
+* user_lastname (text)
+* user_email (text)
 * user_greekname (text)
-* teacher (boolean)
+<!-- * teacher (boolean) -->
 
 ### practice_records
 
 * record_id (pk)
 * user_id (fk) [many to one]
-* date (number) 
-  * Do I need to split this into year, month, day for ease of access?
+* date (datetime) 
 * practiced (boolean)
 * note (longtext)
 
 ### teacher_notes
 
 * note_id (pk)
+<!-- * teacher_id (fk) [many to one] -->
 * user_id (fk) [many to one]
-* date (number)
-* note_title (text)
+* date (datetime)
+* note_title (text) [need it?]
 * note (longtext)
 * private (boolean)
