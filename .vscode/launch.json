@@ -11,7 +11,7 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/../../Programming/watchandcode/web/request-inspector/server.js"
+      "program": "${workspaceFolder}/server.js"
     }
   ]
 }
