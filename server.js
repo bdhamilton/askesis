@@ -13,29 +13,41 @@ const pool = new pg.Pool();
 
 // Create database tables
 // Q: Do I need to put these in a unique database?
-pool.query(`CREATE TABLE IF NOT EXISTS students (
-  ID SERIAL PRIMARY KEY,
-  firstname TEXT,
-  lastname TEXT,
-  email TEXT,
-  registered DATE DEFAULT CURRENT_DATE
-);`);
+pool.query(`
+CREATE TABLE IF NOT EXISTS
+  students (
+    student_id SERIAL PRIMARY KEY,
+    first_name TEXT,
+    last_name TEXT,
+    email TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`);
 
-pool.query(`CREATE TABLE IF NOT EXISTS practice_records (
-  ID SERIAL PRIMARY KEY,
-  student INT REFERENCES students (id),
-  date DATE,
-  practiced BOOLEAN,
-  note TEXT
-);`);
+pool.query(`
+CREATE TABLE IF NOT EXISTS
+  practice_records (
+    record_id SERIAL PRIMARY KEY,
+    student INT 
+      REFERENCES students (student_id),
+    practice_date DATE,
+    has_practiced BOOLEAN,
+    note TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`);
 
-pool.query(`CREATE TABLE IF NOT EXISTS teacher_notes (
-  ID SERIAL PRIMARY KEY,
-  student INT REFERENCES students (id),
-  date DATE DEFAULT CURRENT_DATE,
-  note TEXT,
-  private BOOLEAN
-);`);
+pool.query(`
+CREATE TABLE IF NOT EXISTS
+  teacher_notes (
+    note_id SERIAL PRIMARY KEY,
+    student INT
+      REFERENCES students (student_id),
+    note TEXT,
+    is_private BOOLEAN,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  );
+`);
 
 // Serve main page
 app.get("/", function(request, response) {
