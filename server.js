@@ -18,7 +18,7 @@ pool.query(`CREATE TABLE IF NOT EXISTS students (
   firstname TEXT,
   lastname TEXT,
   email TEXT,
-  registered DATE
+  registered DATE DEFAULT CURRENT_DATE
 );`);
 
 pool.query(`CREATE TABLE IF NOT EXISTS practice_records (
@@ -32,7 +32,7 @@ pool.query(`CREATE TABLE IF NOT EXISTS practice_records (
 pool.query(`CREATE TABLE IF NOT EXISTS teacher_notes (
   ID SERIAL PRIMARY KEY,
   student INT REFERENCES students (id),
-  date DATE,
+  date DATE DEFAULT CURRENT_DATE,
   note TEXT,
   private BOOLEAN
 );`);
