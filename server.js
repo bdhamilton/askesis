@@ -51,6 +51,57 @@ CREATE TABLE IF NOT EXISTS
 
 // Serve main page
 app.get("/", function(request, response) {
-  const HTML = "<h1>Askesis</h1>";
-  response.send(HTML);
+  // First, display the student's current streak.
+  /**
+   * TODO: student ID should be set dynamically.
+   */
+  const streakSql = `
+  SELECT 
+    practice_date as date, 
+    has_practiced as practiced  
+  FROM practice_records
+  WHERE
+    student = ($1)
+  ORDER BY practice_date DESC;
+  `;
+  const streakParameters = [1];
+
+  pool.query(streakSql, streakParameters, function (error, streakResult) {
+    // Initialize a count of their streak and a reference to today's date.
+    let streakCount = 0;
+    const today = new Date();
+    
+    // If the student has logged today, count the streak from today (daysBack = 0).
+    // If not, count the streak from yesterday (daysBack = 1).
+    let daysBack = new Date(streakResult.rows[0].date) === today ? 0 : 1;
+
+    // For each practice record:
+    for (let record of streakResult.rows) {
+      // Get our dates to compare into a common format.
+      const recordDate = new Date(record.date).toDateString();
+      let dateToCheck = new Date(today);
+      dateToCheck.setDate(today.getDate() - daysBack);
+      dateToCheck = dateToCheck.toDateString();
+
+      // Check that the student practiced on the previous day.
+      if (recordDate === dateToCheck && record.practiced === true) {
+        // If so, increment the count and set up to look at the previous day.
+        streakCount++;
+        daysBack++;
+      } else {
+        // If there's a gap in the record or a recorded miss, stop counting.
+        /**
+         * TODO: once I spin this off into its own 
+         * function, that function should return here.
+         * For now, just break.
+         */
+        break;
+      }
+    }
+
+    const HTML = `<h1>Askesis</h1><p>Current Streak: ${streakCount}<p>`;
+    response.send(HTML);
+  });
+  
+
 });
