@@ -1,5 +1,23 @@
 {
-  "dependencies": {
+  "name": "askesis",
+  "version": "1.0.0",
+  "description": "A Greek practice tracker",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bdhamilton/askesis.git"
+  },
+  "author": "Brian Hamilton",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bdhamilton/askesis/issues"
+  },
+  "homepage": "https://github.com/bdhamilton/askesis#readme",
+  "devDependencies": {
     "express": "^4.19.2",
     "pg": "^8.11.5"
   }
