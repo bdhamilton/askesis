@@ -27,42 +27,53 @@
     <p><%- streakString %></p>
 
     <%
-    let today = new Date();
-
-    // What day of the week did this month start on?
-    let firstDayOfTheMonth = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
-
-    // How many days are there in this month?
-    let daysInThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
-
-    // How many days were there in last month?
-    let daysInLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-    
-    // Build this month's calendar.
-    let calendar = [];
+    // For now, build everything off of today's date.
+    // Later we'll need to be able to build from any date.
+    const today = new Date(2024, 0, 5);
+    const calendar = [];
 
     // We'll need to:
     // 1. Add the trailing days of the previous month, calculating based on the start day of this month.
 
-    let calendarStart = daysInLastMonth - firstDayOfTheMonth + 1;
+    const firstDayOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
+    const daysInLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    const calendarStart = daysInLastMonth - firstDayOfThisMonth + 1;
+
+    // Build a date string to include in the HTML dataset
+    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1).getMonth();
+    const lastMonthsYear = new Date(today.getFullYear(), today.getMonth() - 1).getFullYear();
+    let monthString = lastMonth < 10 ? "0" + (lastMonth + 1) : (lastMonth + 1).toString();
+    let dateString = `${lastMonthsYear}-${monthString}-`;
 
     for (let i = calendarStart; i <= daysInLastMonth; i++) {
-      calendar.push(i);
+      let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
+      calendar.push({ fullDate: `${dateString}${todayString}`, day: i });
     }
 
     // 2. Add the days of this month.
+    let thisMonth = today.getMonth();
+    let thisYear = today.getFullYear();
+    let daysInThisMonth = new Date(thisYear, thisMonth + 1, 0).getDate();
+    monthString = thisMonth < 10 ? "0" + (thisMonth + 1) : (thisMonth + 1).toString();
+    dateString = `${thisYear}-${monthString}-`;
 
     for (let i = 1; i <= daysInThisMonth; i++) {
-      calendar.push(i);
+      let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
+      calendar.push({ fullDate: `${dateString}${todayString}`, day: i });
     }
 
-    // 3. And add the starting days of next month to round out a week.
+    // 3. Add the starting days of next month to round out to a full week.
+    let lengthSoFar = calendar.length;  
+    let totalDays = Math.ceil(lengthSoFar / 7) * 7; 
 
-    let lengthSoFar = calendar.length;
-    let totalDays = Math.ceil(lengthSoFar / 7) * 7;
+    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1).getMonth();
+    const nextMonthsYear = new Date(today.getFullYear(), today.getMonth() + 1).getFullYear();
+    monthString = nextMonth < 10 ? "0" + (nextMonth + 1) : (nextMonth + 1).toString();
+    dateString = `${nextMonthsYear}-${monthString}-`;
 
     for (let i = 1; i <= totalDays - lengthSoFar; i++) {
-      calendar.push(i);
+      let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
+      calendar.push({ fullDate: `${dateString}${todayString}`, day: i });
     }
     %>
     <h3 class="calendar-heading">
@@ -72,7 +83,7 @@
     </h3>
     <ol class="calendar">
       <% for (let i = 0; i < calendar.length; i++) { %>
-        <li><%= calendar[i] %></li>
+        <li data-date="<%= calendar[i].fullDate %>"><%= calendar[i].day %></li>
       <% } %>
     </ol>
   </main>
