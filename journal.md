@@ -1,5 +1,15 @@
 # Journal
 
+## June 3, 2024
+
+## 8:30am
+
+I've made some good progress this morning. The calendar is displaying as it should now: it includes a full date string (YYYY-MM-DD) in the dataset for every day, it marks days in the selected month differently than the others, it checks the database records for each day in the current month to see whether there's a record, and it doesn't mark past the current date.
+
+The code to build the calendar is starting to feel a little unwieldy and disorganized, so it would be worth trying to summarize and outline it at a high level and double checking my logic. 
+
+It's clear now that writing any serious code in an EJS template is a bad idea. Error reporting doesn't work correctly, and I can't use the debugger. (Not to mention that syntax highlighting doesn't work, which makes it harder to see typos.) I'm still unsure where to put it. 
+
 ## June 2, 2024
 
 ### 10pm 
