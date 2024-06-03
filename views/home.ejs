@@ -29,7 +29,7 @@
     <%
     // For now, build everything off of today's date.
     // Later we'll need to be able to build from any date.
-    const today = new Date(2024, 0, 5);
+    const today = new Date();
     const calendar = [];
 
     // We'll need to:
@@ -37,7 +37,7 @@
 
     const firstDayOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
     const daysInLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
-    const calendarStart = daysInLastMonth - firstDayOfThisMonth + 1;
+    const calendarStart = daysInLastMonth - firstDayOfThisMonth + 1; // adjusted for index
 
     // Build a date string to include in the HTML dataset
     const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1).getMonth();
@@ -47,7 +47,7 @@
 
     for (let i = calendarStart; i <= daysInLastMonth; i++) {
       let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
-      calendar.push({ fullDate: `${dateString}${todayString}`, day: i });
+      calendar.push({ thisMonth: false, fullDate: `${dateString}${todayString}`, day: i });
     }
 
     // 2. Add the days of this month.
@@ -57,9 +57,47 @@
     monthString = thisMonth < 10 ? "0" + (thisMonth + 1) : (thisMonth + 1).toString();
     dateString = `${thisYear}-${monthString}-`;
 
+    // As we go, check against the results of the database query.
+    let nextRecordIndex = 0;
+    let nextRecord = thisMonthsRecords[nextRecordIndex];
+
     for (let i = 1; i <= daysInThisMonth; i++) {
+      let dayString = i.toString();
       let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
-      calendar.push({ fullDate: `${dateString}${todayString}`, day: i });
+      console.log(nextRecord);
+
+      // If we've got a record for today, add its information...
+      if (nextRecord.day === dayString) {
+        calendar.push({ 
+          thisMonth: true,
+          fullDate: `${dateString}${todayString}`, 
+          day: i,  
+          practiced: nextRecord.practiced,
+          note: nextRecord.note
+        });
+
+        // ...and update our next record info, if other records exist.
+        if ((nextRecordIndex + 1) < thisMonthsRecords.length) {
+          nextRecordIndex++;
+          nextRecord = thisMonthsRecords[nextRecordIndex];
+        }
+      } else if (i < today.getDate()) {
+        calendar.push({ 
+          thisMonth: true,
+          fullDate: `${dateString}${todayString}`, 
+          day: i,  
+          practiced: false,
+          note: ''
+        });
+      } else {
+        calendar.push({ 
+          thisMonth: true,
+          fullDate: `${dateString}${todayString}`, 
+          day: i,  
+          practiced: null,
+          note: ''
+        });
+      }
     }
 
     // 3. Add the starting days of next month to round out to a full week.
@@ -73,7 +111,7 @@
 
     for (let i = 1; i <= totalDays - lengthSoFar; i++) {
       let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
-      calendar.push({ fullDate: `${dateString}${todayString}`, day: i });
+      calendar.push({ thisMonth: false, fullDate: `${dateString}${todayString}`, day: i });
     }
     %>
     <h3 class="calendar-heading">
@@ -82,8 +120,20 @@
       <a href="#">»</a>
     </h3>
     <ol class="calendar">
-      <% for (let i = 0; i < calendar.length; i++) { %>
-        <li data-date="<%= calendar[i].fullDate %>"><%= calendar[i].day %></li>
+      <% 
+      for (let i = 0; i < calendar.length; i++) {
+        let css;
+        if (calendar[i].practiced === true) {
+          css = ' class="practiced"';
+        } else if (calendar[i].practiced === false) {
+          css = ' class="skipped"';
+        }
+
+        if (calendar[i].thisMonth === false) {
+          css = ' class="not-this-month"';
+        }
+      %>
+        <li data-date="<%= calendar[i].fullDate %>"<%- css %>><%= calendar[i].day %></li>
       <% } %>
     </ol>
   </main>
