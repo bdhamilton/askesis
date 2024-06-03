@@ -64,7 +64,6 @@
     for (let i = 1; i <= daysInThisMonth; i++) {
       let dayString = i.toString();
       let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
-      console.log(nextRecord);
 
       // If we've got a record for today, add its information...
       if (nextRecord.day === dayString) {
@@ -115,9 +114,9 @@
     }
     %>
     <h3 class="calendar-heading">
-      <a href="#">«</a>
+      <!-- <a href="#">«</a> -->
         <%= today.toLocaleString('default', { month: 'long', year: 'numeric' }); %>
-      <a href="#">»</a>
+      <!-- <a href="#">»</a> -->
     </h3>
     <ol class="calendar">
       <% 
@@ -132,8 +131,13 @@
         if (calendar[i].thisMonth === false) {
           css = ' class="not-this-month"';
         }
+
+        let note;
+        if (calendar[i].note) {
+          note = `<img src="img/note.svg" alt="[Practice note]" title="${calendar[i].note}">`;
+        }
       %>
-        <li data-date="<%= calendar[i].fullDate %>"<%- css %>><%= calendar[i].day %></li>
+        <li data-date="<%= calendar[i].fullDate %>"<%- css %>><%- note %><%= calendar[i].day %></li>
       <% } %>
     </ol>
   </main>
