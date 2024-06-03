@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ΑΣΚΗΣΙΣ</title>
+  <link rel="stylesheet" href="c.css">
+</head>
+<body>
+  <header>
+    <h1>Η ΑΣΚΗΣΙΣ</h1>
+    <p><q>πλέονες ἐξ ἀσκήσιος ἀγαθοί γίvονται ἤ ἀπὸ φύσιος.</q> <span>—Δημόκριτος</span></p>
+  </header>
+
+  <main>
+    <h2>χαῖρε!</h2>
+    <% 
+    let streakString;
+    if (streak === 0) {
+      streakString = "Time to start a new streak!";
+    } else if (streak === 1) {
+      streakString = "You're at the start of a new streak. Keep it going!";
+    } else {
+      streakString = "You've practiced for <strong>" + streak + " days</strong> in a row. Keep it up!";
+    }
+    %>
+    <p><%- streakString %></p>
+
+    <%
+    let today = new Date();
+
+    // What day of the week did this month start on?
+    let firstDayOfTheMonth = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
+
+    // How many days are there in this month?
+    let daysInThisMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+
+    // How many days were there in last month?
+    let daysInLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    
+    // Build this month's calendar.
+    let calendar = [];
+
+    // We'll need to:
+    // 1. Add the trailing days of the previous month, calculating based on the start day of this month.
+
+    let calendarStart = daysInLastMonth - firstDayOfTheMonth + 1;
+
+    for (let i = calendarStart; i <= daysInLastMonth; i++) {
+      calendar.push(i);
+    }
+
+    // 2. Add the days of this month.
+
+    for (let i = 1; i <= daysInThisMonth; i++) {
+      calendar.push(i);
+    }
+
+    // 3. And add the starting days of next month to round out a week.
+
+    let lengthSoFar = calendar.length;
+    let totalDays = Math.ceil(lengthSoFar / 7) * 7;
+
+    for (let i = 1; i <= totalDays - lengthSoFar; i++) {
+      calendar.push(i);
+    }
+    %>
+    <h3 class="calendar-heading">
+      <a href="#">«</a>
+        <%= today.toLocaleString('default', { month: 'long', year: 'numeric' }); %>
+      <a href="#">»</a>
+    </h3>
+    <ol class="calendar">
+      <% for (let i = 0; i < calendar.length; i++) { %>
+        <li><%= calendar[i] %></li>
+      <% } %>
+    </ol>
+  </main>
+</body>
+</html>
