@@ -2,6 +2,16 @@
 
 ## June 2, 2024
 
+### 10pm 
+
+I set up a home template that (1) displays the student's streak based on database information, and (2) builds a calendar based on the current date. The calendar does not yet contain any database information, though. That will be for tomorrow.
+
+### 5pm
+
+I was going to try to put everything inside the EJS template, but that quickly started feeling silly. Instead, I went ahead and transformed my data getters into asynchronous functions and got them working with the server. I should stop messing around with the format and placement of those bits of code and just get something more fully functional.
+
+Next steps: figure out how to create the current month's calendar dynamically, including the info passed into the template as `thisMonthsRecords`.
+
 ### 8am
 
 Got it working, at least in principle, with nested callback functions! Still working on parsing the data for the second query---getting the month's worth of records to print out in an ordered list. 
