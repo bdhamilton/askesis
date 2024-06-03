@@ -76,7 +76,7 @@ async function getStreak() {
   
   // If the student has logged today, count the streak from today (daysBack = 0).
   // If not, count the streak from yesterday (daysBack = 1).
-  let daysBack = new Date(records.rows[0].date) === today ? 0 : 1;
+  let daysBack = new Date(records.rows[0].date).toDateString() === today.toDateString() ? 0 : 1;
 
   // For each practice record:
   for (let record of records.rows) {
