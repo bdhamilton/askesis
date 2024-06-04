@@ -12,6 +12,6 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 - [X] It should have an Express backend
 - [X] It should have a postgres database to store user data
-- [ ] It should display a list of student practice sessions for the given month
+- [Χ] It should display a list of student practice sessions for the given month
 - [ ] It should allow the student to mark whether they've practiced
 - [ ] It should allow the student to add a note to their practice session
