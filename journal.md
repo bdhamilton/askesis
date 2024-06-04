@@ -1,5 +1,20 @@
 # Journal
 
+## June 4, 2024
+
+## 6:15am
+
+Version 1 is technically complete! As of this morning, the page displays a form if today's practice has not been logged and successfully logs it. I say "technically" because it doesn't really work as I'd like it to yet. I'd like to be updating the database and the page dynamically rather than posting a form. In terms of the UI, I'd also like to make marking whether or not you've practiced and adding a note to that session to be separate steps. But those can all be part of later versions. The main thing is: I now have an app that allows students to log a practice session and add a note to that session, and that successfully pulls practice records from the database and displays them. That's pretty great.
+
+I'm not quite sure where to go next. I could:
+
+* Add more options for user interaction: look at past records, edit notes, log yesterday or the previous day.
+* Figure out dynamic updating
+* Add the teacher view
+* Refigure the UI, which I've changed my mind about
+
+I think the first option is probably best. 
+
 ## June 3, 2024
 
 ## 8:30am
