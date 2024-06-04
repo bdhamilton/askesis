@@ -10,8 +10,8 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 ### v2: More sophisticated controls
 
-- [ ] The student should be able to view past records
-- [ ] The student should be able to edit past notes
+- [X] The student should be able to view past records
+- [X] The student should be able to edit past notes
 - [ ] The student should be able to update yesterday's record
 - [ ] The student should have a better way to read notes
 

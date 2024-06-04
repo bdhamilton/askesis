@@ -119,7 +119,7 @@ async function getMonth(year, month) {
 
     const records = await pool.query(sql, sqlParameters);
 
-    return records.rows;
+    return { year: queryYear, month: queryMonth, records: records.rows };
 }
 
 async function getToday() {
@@ -170,5 +170,33 @@ app.post("/", function (request, response) {
       console.log("New practice session logged.");
       response.render("home", { streak, todaysRecord, thisMonthsRecords });    
     }
+  });
+});
+
+app.get("/:year/:month", async function (request, response) {
+  const streak = await getStreak();
+  const thisMonthsRecords = await getMonth(request.params.year, request.params.month);
+  const todaysRecord = await getToday();
+  response.render("home", { streak, todaysRecord, thisMonthsRecords });
+});
+
+app.post("/:year/:month/:day", async function (request, response) {
+  const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
+  const sql = `
+  UPDATE practice_records
+  SET
+    note = ($3)
+  WHERE
+    student = ($1) AND
+    practice_date = ($2);
+  `;
+  const sqlParameters = [1, dateString, request.body.note];
+
+  pool.query(sql, sqlParameters, function (error) {
+    if (error) {
+      console.log(error);
+    }
+
+    response.redirect("/");
   });
 });

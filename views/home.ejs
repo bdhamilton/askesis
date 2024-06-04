@@ -4,12 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ΑΣΚΗΣΙΣ</title>
-  <link rel="stylesheet" href="c.css">
+  <link rel="stylesheet" href="/c.css">
 </head>
 <body>
   <header>
     <h1>Η ΑΣΚΗΣΙΣ</h1>
-    <p><q>πλέονες ἐξ ἀσκήσιος ἀγαθοί γίvονται ἤ ἀπὸ φύσιος.</q> <span>—Δημόκριτος</span></p>
+    <p><q>πλέονες ἐξ ἀσκήσιος ἀγαθοί γίνονται ἤ ἀπὸ φύσιος.</q> <span>—Δημόκριτος</span></p>
   </header>
 
   <main>
@@ -53,63 +53,71 @@
     <p><%- streakString %></p>
 
     <%
-    // For now, build everything off of today's date.
-    // Later we'll need to be able to build from any date.
     const today = new Date();
+    const selectedDay = new Date();
+    selectedDay.setYear(thisMonthsRecords.year);
+    selectedDay.setMonth(thisMonthsRecords.month - 1);
     const calendar = [];
 
     // We'll need to:
     // 1. Add the trailing days of the previous month, calculating based on the start day of this month.
 
-    const firstDayOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
-    const daysInLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).getDate();
+    const firstDayOfThisMonth = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), 1).getDay();
+    const daysInLastMonth = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), 0).getDate();
     const calendarStart = daysInLastMonth - firstDayOfThisMonth + 1; // adjusted for index
 
     // Build a date string to include in the HTML dataset
-    const lastMonth = new Date(today.getFullYear(), today.getMonth() - 1).getMonth();
-    const lastMonthsYear = new Date(today.getFullYear(), today.getMonth() - 1).getFullYear();
-    let monthString = lastMonth < 10 ? "0" + (lastMonth + 1) : (lastMonth + 1).toString();
-    let dateString = `${lastMonthsYear}-${monthString}-`;
+    const lastMonth = new Date(selectedDay.getFullYear(), selectedDay.getMonth() - 1).getMonth();
+    const lastMonthsYear = new Date(selectedDay.getFullYear(), selectedDay.getMonth() - 1).getFullYear();
+    const lastMonthString = lastMonth < 10 ? "0" + (lastMonth + 1) : (lastMonth + 1).toString();
+    const lastMonthDateString = `${lastMonthsYear}-${lastMonthString}-`;
 
     for (let i = calendarStart; i <= daysInLastMonth; i++) {
       let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
-      calendar.push({ thisMonth: false, fullDate: `${dateString}${todayString}`, day: i });
+      calendar.push({ thisMonth: false, fullDate: `${lastMonthDateString}${todayString}`, day: i });
     }
 
     // 2. Add the days of this month.
-    let thisMonth = today.getMonth();
-    let thisYear = today.getFullYear();
+    let thisMonth = selectedDay.getMonth();
+    let thisYear = selectedDay.getFullYear();
     let daysInThisMonth = new Date(thisYear, thisMonth + 1, 0).getDate();
-    monthString = thisMonth < 10 ? "0" + (thisMonth + 1) : (thisMonth + 1).toString();
-    dateString = `${thisYear}-${monthString}-`;
+    const thisMonthString = thisMonth < 10 ? "0" + (thisMonth + 1) : (thisMonth + 1).toString();
+    const thisMonthDateString = `${thisYear}-${thisMonthString}-`;
 
     // As we go, check against the results of the database query.
-    let nextRecordIndex = 0;
-    let nextRecord = thisMonthsRecords[nextRecordIndex];
+    let nextRecordIndex;
+    let nextRecord;
+    if (thisMonthsRecords.records.length > 0) {
+      nextRecordIndex = 0;
+      nextRecord = thisMonthsRecords.records[nextRecordIndex];
+    } else {
+      nextRecord = { day: 0 }
+    }
 
     for (let i = 1; i <= daysInThisMonth; i++) {
       let dayString = i.toString();
       let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
+      let thisDate = new Date(selectedDay.getFullYear(), selectedDay.getMonth(), i);
 
       // If we've got a record for today, add its information...
       if (nextRecord.day === dayString) {
         calendar.push({ 
           thisMonth: true,
-          fullDate: `${dateString}${todayString}`, 
+          fullDate: `${thisMonthDateString}${todayString}`, 
           day: i,  
           practiced: nextRecord.practiced,
           note: nextRecord.note
         });
 
         // ...and update our next record info, if other records exist.
-        if ((nextRecordIndex + 1) < thisMonthsRecords.length) {
+        if ((nextRecordIndex + 1) < thisMonthsRecords.records.length) {
           nextRecordIndex++;
-          nextRecord = thisMonthsRecords[nextRecordIndex];
+          nextRecord = thisMonthsRecords.records[nextRecordIndex];
         }
-      } else if (i < today.getDate()) {
+      } else if (thisDate < today) {  
         calendar.push({ 
           thisMonth: true,
-          fullDate: `${dateString}${todayString}`, 
+          fullDate: `${thisMonthDateString}${todayString}`, 
           day: i,  
           practiced: false,
           note: ''
@@ -117,7 +125,7 @@
       } else {
         calendar.push({ 
           thisMonth: true,
-          fullDate: `${dateString}${todayString}`, 
+          fullDate: `${thisMonthDateString}${todayString}`, 
           day: i,  
           practiced: null,
           note: ''
@@ -129,20 +137,23 @@
     let lengthSoFar = calendar.length;  
     let totalDays = Math.ceil(lengthSoFar / 7) * 7; 
 
-    const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1).getMonth();
-    const nextMonthsYear = new Date(today.getFullYear(), today.getMonth() + 1).getFullYear();
-    monthString = nextMonth < 10 ? "0" + (nextMonth + 1) : (nextMonth + 1).toString();
-    dateString = `${nextMonthsYear}-${monthString}-`;
+    const nextMonth = new Date(selectedDay.getFullYear(), selectedDay.getMonth() + 1).getMonth();
+    const nextMonthsYear = new Date(selectedDay.getFullYear(), selectedDay.getMonth() + 1).getFullYear();
+    const nextMonthString = nextMonth < 10 ? "0" + (nextMonth + 1) : (nextMonth + 1).toString();
+    const nextMonthDateString = `${nextMonthsYear}-${nextMonthString}-`;
 
     for (let i = 1; i <= totalDays - lengthSoFar; i++) {
       let todayString = i < 10 ? "0" + i : i.toString();  // get a two digit date string
-      calendar.push({ thisMonth: false, fullDate: `${dateString}${todayString}`, day: i });
+      calendar.push({ thisMonth: false, fullDate: `${nextMonthDateString}${todayString}`, day: i });
     }
+
+    const lastMonthUrl = `/${lastMonthsYear}/${lastMonthString}`;
+    const nextMonthUrl = `/${nextMonthsYear}/${nextMonthString}`;
     %>
     <h3 class="calendar-heading">
-      <!-- <a href="#">«</a> -->
-        <%= today.toLocaleString('default', { month: 'long', year: 'numeric' }); %>
-      <!-- <a href="#">»</a> -->
+      <a href="<%= lastMonthUrl %>">«</a>
+        <%= selectedDay.toLocaleString('default', { month: 'long', year: 'numeric' }); %>
+      <a href="<%= nextMonthUrl %>">»</a>
     </h3>
     <ol class="calendar">
       <% 
@@ -160,12 +171,15 @@
 
         let note;
         if (calendar[i].note) {
-          note = `<img src="img/note.svg" alt="[Practice note]" title="${calendar[i].note}">`;
+          note = `<img src="/img/note.svg" alt="[Practice note]" title="${calendar[i].note}">`;
         }
       %>
         <li data-date="<%= calendar[i].fullDate %>"<%- css %>><%- note %><%= calendar[i].day %></li>
       <% } %>
     </ol>
+    <div class="editNote-div">
+    </div>
   </main>
+  <script src="/misc.js"></script>
 </body>
 </html>
