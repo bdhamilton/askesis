@@ -13,8 +13,8 @@ app.set('views', './views/');
 app.use(express.static(__dirname + '/static'));
 
 // Don't know if I need these yet:
-// app.use(express.json());
-// app.use(express.urlencoded());
+app.use(express.json());
+app.use(express.urlencoded());
 
 // Set up Postgres
 const pg = require("pg");
@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS
     record_id SERIAL PRIMARY KEY,
     student INT 
       REFERENCES students (student_id),
-    practice_date DATE,
+    practice_date DATE DEFAULT CURRENT_DATE,
     has_practiced BOOLEAN,
     note TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
@@ -122,9 +122,53 @@ async function getMonth(year, month) {
     return records.rows;
 }
 
+async function getToday() {
+  const sql = `
+  SELECT 
+    has_practiced, 
+    note
+  FROM practice_records
+  WHERE
+    student = 1 AND
+    practice_date = CAST(NOW() as Date);
+  `;
+  const record = await pool.query(sql);
+
+  if (record.rowCount > 0) {
+    return { logged: true, practiced: record.rows[0].has_practiced, note: record.rows[0].note };
+  } else {
+    return { logged: false };
+  }
+}
+
 // Serve main page
 app.get("/", async function(request, response) {
   const streak = await getStreak();
   const thisMonthsRecords = await getMonth();
-  response.render("home", { streak, thisMonthsRecords });
+  const todaysRecord = await getToday();
+  response.render("home", { streak, todaysRecord, thisMonthsRecords });
+});
+
+app.post("/", function (request, response) {
+  const sql = `
+  INSERT INTO practice_records
+    (student, has_practiced, note)
+  VALUES
+    (($1), ($2), ($3));
+  `;
+  const sqlParameters = [1, request.body.practiced, request.body.note];
+
+  pool.query(sql, sqlParameters, async function (error) {
+    const streak = await getStreak();
+    const thisMonthsRecords = await getMonth();
+    const todaysRecord = await getToday();
+
+    if (error) {
+      console.log(error)
+      response.render("home", { streak, todaysRecord, thisMonthsRecords });
+    } else {
+      console.log("New practice session logged.");
+      response.render("home", { streak, todaysRecord, thisMonthsRecords });    
+    }
+  });
 });

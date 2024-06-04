@@ -14,7 +14,33 @@
 
   <main>
     <h2>χαῖρε!</h2>
+    <%
+    // Only display the form if nothing has been logged yet for today.
+    if (todaysRecord.logged === false) {
+    %>
+    <form action="/" method="POST">
+      
+      <h3>ἤσκησας σήμερον;</h3>
+      <div>
+        <input type="radio" name="practiced" id="practiced-true" value="true">
+        <label for="practiced-true"><strong>Ναί</strong>, ἤσκησα!</label>
+      </div>
+
+      <div>
+        <input type="radio" name="practiced" id="practiced-false" value="false">
+        <label for="practiced-false"><strong>Οὐχί</strong>, οὐκ ἤσκησα σήμερον.</label>
+      </div>
+
+      <div>
+        <label for="note">Τὶ ἐποίησας;</label>
+        <textarea name="note" id="note" maxlength="100"></textarea>
+      </div>
+
+      <button type="submit">προπέμπειν</button>
+    </form>
     <% 
+    } 
+
     let streakString;
     if (streak === 0) {
       streakString = "Time to start a new streak!";
