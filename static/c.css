@@ -42,8 +42,17 @@ p, h1, h2, h3, h4, h5, h6 {
 
 /** || General */
 
+@font-face {
+  font-family: "Brill";
+  src:
+    local("Brill"),
+    url("brill.ttf") format("truetype")
+}
+
 body {
   padding: 15px;
+  font-family: "Brill", "Noto Sans", sans-serif;
+  font-size: 24px;
 }
 
 main,
