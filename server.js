@@ -105,7 +105,7 @@ async function getMonth(year, month) {
 
   const sql = `
     SELECT 
-      EXTRACT(DAY FROM practice_date) AS day,
+      TO_CHAR(practice_date, 'YYYY-MM-DD') AS date,
       has_practiced AS practiced,
       note
     FROM practice_records
@@ -144,9 +144,9 @@ async function getToday() {
 // Serve main page
 app.get("/", async function(request, response) {
   const streak = await getStreak();
-  const thisMonthsRecords = await getMonth();
-  const todaysRecord = await getToday();
-  response.render("home", { streak, todaysRecord, thisMonthsRecords });
+  const practices = await getMonth();
+  const todaysPractice = await getToday();
+  response.render("home", { streak, todaysPractice, practices });
 });
 
 app.post("/", function (request, response) {
@@ -160,24 +160,24 @@ app.post("/", function (request, response) {
 
   pool.query(sql, sqlParameters, async function (error) {
     const streak = await getStreak();
-    const thisMonthsRecords = await getMonth();
-    const todaysRecord = await getToday();
+    const practices = await getMonth();
+    const todaysPractice = await getToday();
 
     if (error) {
       console.log(error)
-      response.render("home", { streak, todaysRecord, thisMonthsRecords });
+      response.render("home", { streak, todaysPractice, practices });
     } else {
       console.log("New practice session logged.");
-      response.render("home", { streak, todaysRecord, thisMonthsRecords });    
+      response.render("home", { streak, todaysPractice, practices });    
     }
   });
 });
 
 app.get("/:year/:month", async function (request, response) {
   const streak = await getStreak();
-  const thisMonthsRecords = await getMonth(request.params.year, request.params.month);
-  const todaysRecord = await getToday();
-  response.render("home", { streak, todaysRecord, thisMonthsRecords });
+  const practices = await getMonth(request.params.year, request.params.month);
+  const todaysPractice = await getToday();
+  response.render("home", { streak, todaysPractice, practices });
 });
 
 app.post("/:year/:month/:day", async function (request, response) {
