@@ -1,5 +1,79 @@
 # Journal
 
+## June 5, 2024
+
+The most complicated logic in this app so far is writing the calendar. Here is a high-level outline to clarify the steps I'm taking.
+
+In server.js:
+  Get a month of practice records from the database
+  Pass those records to the `home` EJS template
+In home.ejs:
+  Get date objects for today and the month to display
+  Initialize a blank calendar array
+  Add trailing days of _last_ month to array:
+    Calculate the days that need to be displayed
+    Create a date string for them (YYYY-MM-)
+    Push each day to the array
+  Add days of selected month
+    Get number of days in current month
+    Create a date string for them (YYYY-MM-)
+    Initialize variables to track next database record
+    For each day in selected month:
+      Initialize date information
+      If day matches next database record:
+        Add practice information
+      Else if day is in the past:
+        Add that student did _not_ practice
+      Push day to calendar array
+  Add starting days of following month
+    Calculate total days needed to make a multiple of 7
+    Create a date string for these dates
+    Push each date to array
+  Create URLs for last month and next month
+  Print name of month to display
+  For each day in calendar array:
+    Construct CSS classes based on data
+    Add note marker if necessary
+    Print the list item
+
+It does seem to me that I should probably be able to simplifying this down to one big loop, rather than repeating so many ideas for last month, this month, and next month. What if instead:
+
+Get date objects for today and month to display
+Calculate starting date and total size of calendar:
+  Find starting day of this month
+  Find number of days in last month
+  Calculate calendar's start date (in a date object)
+    Call it nextDayToCreate
+  Calculate total days that will need to be displayed:
+    Next multiple of seven beyond trailing days + days in this month
+Initialize a blank calendar array
+Set up variables to hold next database record
+For totalDaysToDisplay times:
+  Convert nextDayToCreate to ISO format
+  Create day object:
+    Set date property in ISO format
+    If we're in the selected month, set thisMonth to true
+    Set day to day of nextDayToCreate
+    If database record exists for this date:
+      Add practice information
+    Else if date is in the past:
+      Set practiced to false
+  Push date to calendar array
+Write calendar:
+  Get printable name of current month
+  Get URLS for last month and next month
+  For each day:
+    Define styles
+    Add note
+    Print a list item
+
+
+
+
+
+
+
+
 ## June 4, 2024
 
 ## 6:15am
