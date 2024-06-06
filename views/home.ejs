@@ -54,110 +54,89 @@
     <p><%- streakString %></p>
 
     <%
-    // Get a date object for the current day and the month we need to display.
-    const today = new Date();
-    const monthToDisplay = new Date();
-    monthToDisplay.setYear(practices.year);
-    monthToDisplay.setMonth(practices.month - 1);
+    // [1] Get the date objects we'll need.
 
-    // We're going to keep our calendar information in an array.
+    const today = new Date();
+    const monthToDisplay = new Date(practices.year, practices.month - 1, 1);
+
+    // [2] Find starting date and total size of monthly calendar.
+
+    // Find the starting day by subtracting the index of
+    // the first day from the current date.
+    const nextDayToCreate = new Date(monthToDisplay);
+    nextDayToCreate.setDate(monthToDisplay.getDate() - monthToDisplay.getDay());
+
+    // Find the total size by finding the next multiple of seven
+    // beyond the number of the days we already know we need.
+    const daysInMonth = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth() + 1, 0).getDate();
+    const daysNeededSoFar = monthToDisplay.getDay() + daysInMonth;
+    const totalDaysToCreate = Math.ceil(daysNeededSoFar / 7) * 7;
+
+    // [3] Build a calendar array
+
     const calendar = [];
 
-    // 1. ADD THE TRAILING DAYS OF THE PREVIOUS MONTH
-    // To calculate this, we need to know what weekday this month 
-    // started on and how many days were in last month.
-
-    const firstDayOfTheMonth = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth(), 1).getDay();
-    const daysInLastMonth = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth(), 0).getDate();
-    const calendarStart = daysInLastMonth - firstDayOfTheMonth + 1; // adjusted for index
-
-    // For the dataset, we need a string in the format `YYYY-MM-DD`. 
-    // Get the month and year, pad the month with a zero, and build the string.
-    const lastMonth = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth() - 1);
-    const lastMonthString = (lastMonth.getMonth() + 1).toString().padStart(2, "0");
-    const lastMonthDateString = `${lastMonth.getFullYear()}-${lastMonthString}-`;
-
-    for (let i = calendarStart; i <= daysInLastMonth; i++) {
-      calendar.push({ fullDate: `${lastMonthDateString}${i.toString().padStart(2, "0")}`, day: i, thisMonth: false });
-    }
-
-    // 2. ADD THE DAYS OF THE SELECTED MONTH
-    // Get the number of days in the month and build a date string.
-
-    let daysInThisMonth = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth() + 1, 0).getDate();
-    const thisMonthString = (monthToDisplay.getMonth() + 1).toString().padStart(2, "0");
-    const thisMonthDateString = `${monthToDisplay.getFullYear()}-${thisMonthString}-`;
-
     // As we build the array, we're going to check each day against our database.
-    // Set up some variables to track the next database record we have to check.
-    let nextRecordIndex;
-    let nextRecord;
-    if (practices.records.length === 0) {
-      // If there are no records from this month, set the record to empty.
-      nextRecord = { day: 0 };
-    } else {
-      // Otherwise, cue up the first record.
-      nextRecordIndex = 0;
-      nextRecord = practices.records[nextRecordIndex];
-    }
+    let nextRecordIndex = 0;
+    let nextRecord = practices.records[nextRecordIndex];
 
-    // For each day of the selected month:
-    for (let i = 1; i <= daysInThisMonth; i++) {
-      const thisDate = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth(), i, 23, 59, 59);
-      const dayString = i.toString().padStart(2, "0");
-      const dateString = `${thisMonthDateString}${dayString}`;
+    // For each day we need to create:
+    for (let i = 0; i < totalDaysToCreate; i++) {
+      // Build date string (manually to avoid accidental
+      // time zone changes that come with int'l methods)
+      const year = nextDayToCreate.getFullYear();
+      const month = (nextDayToCreate.getMonth() + 1).toString().padStart(2, "0");
+      const day = nextDayToCreate.getDate().toString().padStart(2, "0");
+      const dateString = `${year}-${month}-${day}`;
 
-      // Start building the object
-      // Q: Should this sort of work be done with a `today` class? 
-      const todayInfo = {
-        fullDate: `${dateString}`,
-        day: i,
-        thisMonth: true,
-      };
+      // Build an object with this day's information.
+      const calendarDay = {};
 
-      // If we've got a record for today, add its information...
-      if (nextRecord.date === dateString) {
-        todayInfo.practiced = nextRecord.practiced;
-        todayInfo.note = nextRecord.note;
+      calendarDay.fullDate = dateString;
+      calendarDay.day = nextDayToCreate.getDate();
 
-        // ...and update our next record info, if other records exist.
-        if (practices.records.length > nextRecordIndex + 1) {
+      // If we're in the selected month, add practice records:
+      if (nextDayToCreate.getMonth() === monthToDisplay.getMonth()) {
+        calendarDay.thisMonth = true;
+
+        // If have a database record for today, use it.
+        if (nextRecord && dateString === nextRecord.date) {
+          calendarDay.practiced = nextRecord.practiced;
+          calendarDay.note = nextRecord.note;
+  
+          // And update the next record.
           nextRecordIndex++;
           nextRecord = practices.records[nextRecordIndex];
+        } else if (nextDayToCreate < today.setHours(0, 0, 0, 0)) {
+          // If we have no record and the date is past:
+          calendarDay.practiced = false;
         }
-      } else if (thisDate < today) {  
-        // If there's no record and the day is in the past,
-        // mark that the student hasn't practiced.
-        todayInfo.practiced = false;
-      } 
-      
-      // Add the object to the calendar array.
-      calendar.push(todayInfo);
+      }
+
+      // Add the day to the calendar.
+      calendar.push(calendarDay);
+
+      // Increment the day
+      nextDayToCreate.setDate(nextDayToCreate.getDate() + 1);
     }
 
-    // 3. ADD STARTING DAYS OF FOLLOWING MONTH
+    // [4] Print the calendar.
 
-    // We need the total days in our calendar to be a multiple of seven.
-    let lengthSoFar = calendar.length;  
-    let totalDays = Math.ceil(lengthSoFar / 7) * 7; 
+    // E.g., "June 2024"
+    const currentMonth = monthToDisplay.toLocaleString('default', { month: 'long', year: 'numeric' });
 
-    // Format a date string for next month's dates
-    const nextMonth = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth() - 1);
-    const nextMonthString = (nextMonth.getMonth() + 1).toString().padStart(2, "0");
-    const nextMonthDateString = `${nextMonth.getFullYear()}-${nextMonthString}-`;
+    const lastMonth = new Date(monthToDisplay);
+    lastMonth.setMonth(monthToDisplay.getMonth() - 1);
+    const nextMonth = new Date(monthToDisplay);
+    nextMonth.setMonth(monthToDisplay.getMonth() + 1);
 
-    // For each day we need to display
-    for (let i = 1; i <= totalDays - lengthSoFar; i++) {
-      // Add the day to the calendar
-      calendar.push({ fullDate: `${nextMonthDateString}${i.toString().padStart(2, "0")}`, day: i, thisMonth: false });
-    }
-
-    const lastMonthUrl = `/${lastMonth.getFullYear()}/${lastMonthString}`;
-    const nextMonthUrl = `/${nextMonth.getFullYear()}/${nextMonthString}`;
+    // E.g., "/2024/05"
+    const lastMonthUrl = `/${lastMonth.getFullYear()}/${(lastMonth.getMonth() + 1).toString().padStart(2, "0")}`;
+    const nextMonthUrl = `/${nextMonth.getFullYear()}/${(nextMonth.getMonth() + 1).toString().padStart(2, "0")}`;
     %>
     <h3 class="calendar-heading">
       <a href="<%= lastMonthUrl %>">«</a>
-        <%= monthToDisplay.toLocaleString('default', { month: 'long', year: 'numeric' }); %>
+        <%= currentMonth %>
       <a href="<%= nextMonthUrl %>">»</a>
     </h3>
     <ol class="calendar">
@@ -172,7 +151,7 @@
           css = ' class="skipped"';
         }
 
-        if (calendar[i].thisMonth === false) {
+        if (calendar[i].thisMonth !== true) {
           css = ' class="not-this-month"';
         }
 

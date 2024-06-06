@@ -2,6 +2,12 @@
 
 ## June 5, 2024
 
+## 11pm
+
+Finished a total rewrite of the calendaring code using one loop instead of three. Definitely an improvement, though I'm still a little worried about the number of nested if-clauses in there.
+
+### 8am
+
 The most complicated logic in this app so far is writing the calendar. Here is a high-level outline to clarify the steps I'm taking.
 
 In server.js:
@@ -59,6 +65,7 @@ For totalDaysToDisplay times:
     Else if date is in the past:
       Set practiced to false
   Push date to calendar array
+  Incremente nextDayToCreate
 Write calendar:
   Get printable name of current month
   Get URLS for last month and next month
