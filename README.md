@@ -12,8 +12,8 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 - [X] The student should be able to view past records
 - [X] The student should be able to edit past notes
-- [ ] The student should be able to update yesterday's record
-- [ ] The student should have a better way to read notes
+- [X] The student should be able to update yesterday's record
+- [X] The student should only be able to update dates in the past.
 
 ### v1: A single user app
 
