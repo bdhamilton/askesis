@@ -16,13 +16,19 @@ function writeUpdateForm(event) {
   textarea.setAttribute("name", "note");
   textarea.setAttribute("id", "note");
   textarea.innerText = currentNote || '';
+  
+  const loggedInput = document.createElement("input");
+  loggedInput.setAttribute("type", "hidden");
+  loggedInput.setAttribute("name", "alreadyLogged");
+  loggedInput.setAttribute("value", event.currentTarget.dataset.logged || false)
 
   const submitButton = document.createElement("button");
   submitButton.setAttribute("type", "submit");
-  submitButton.innerText = 'Submit';
+  submitButton.innerText = 'καταπέμπειν';
 
   form.appendChild(label);
   form.appendChild(textarea);
+  form.appendChild(loggedInput);
   form.appendChild(submitButton);
 
   const editNoteDiv = document.querySelector(".editNote-div");
@@ -30,7 +36,8 @@ function writeUpdateForm(event) {
   editNoteDiv.appendChild(form);
 }
 
-const calendarCells = document.querySelectorAll(".calendar li ");
+// Add event listeners to all cells in the current month.
+const calendarCells = document.querySelectorAll(".calendar li[data-editable='true']");
 for (let i = 0; i < calendarCells.length; i++) {
   calendarCells[i].addEventListener("click", writeUpdateForm);
 }

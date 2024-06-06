@@ -17,9 +17,15 @@
     <h2>χαῖρε!</h2>
     <%
     // Only display the form if nothing has been logged yet for today.
-    if (todaysPractice.logged === false) {
+    if (recentPractice.today.logged === false) {
+      // Build a URL for today's date
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = (today.getMonth() + 1).toString().padStart(2, "0");
+      const day = today.getDate().toString().padStart(2, "0");
+      const postURL = `/${year}/${month}/${day}`;
     %>
-    <form action="/" method="POST">
+    <form action="<%= postURL %>" method="POST">
       
       <h3>ἤσκησας σήμερον;</h3>
       <div>
@@ -37,8 +43,40 @@
         <textarea name="note" id="note" maxlength="100"></textarea>
       </div>
 
-      <button type="submit">προπέμπειν</button>
+      <button type="submit">καταπέμπειν</button>
     </form>
+    <% 
+    } 
+
+    if (recentPractice.yesterday.logged === false) {
+      // Build a URL for yesterday's date
+      const yesterday = new Date();
+      yesterday.setDate(yesterday.getDate() - 1);
+      const year = yesterday.getFullYear();
+      const month = (yesterday.getMonth() + 1).toString().padStart(2, "0");
+      const day = yesterday.getDate().toString().padStart(2, "0");
+      const postURL = `/${year}/${month}/${day}`;
+    %>
+      <form action="<%= postURL %>" method="POST">
+        
+        <h3>χθές ἤσκησας;</h3>
+        <div>
+          <input type="radio" name="practiced" id="practiced-true" value="true">
+          <label for="practiced-true"><strong>Ναί</strong>, ἤσκησα!</label>
+        </div>
+  
+        <div>
+          <input type="radio" name="practiced" id="practiced-false" value="false">
+          <label for="practiced-false"><strong>Οὐχί</strong>, οὐκ ἤσκησα σήμερον.</label>
+        </div>
+  
+        <div>
+          <label for="note">Τὶ ἐποίησας;</label>
+          <textarea name="note" id="note" maxlength="100"></textarea>
+        </div>
+
+        <button type="submit">καταπέμπειν</button>
+      </form>
     <% 
     } 
 
@@ -103,13 +141,17 @@
         if (nextRecord && dateString === nextRecord.date) {
           calendarDay.practiced = nextRecord.practiced;
           calendarDay.note = nextRecord.note;
+          calendarDay.logged = true;
+          calendarDay.editable = true;
   
           // And update the next record.
           nextRecordIndex++;
           nextRecord = practices.records[nextRecordIndex];
         } else if (nextDayToCreate < today.setHours(0, 0, 0, 0)) {
           // If we have no record and the date is past:
+          calendarDay.logged = false;
           calendarDay.practiced = false;
+          calendarDay.editable = true;
         }
       }
 
@@ -145,25 +187,48 @@
       for (let i = 0; i < calendar.length; i++) {
         // Define the necessary styles.
         let css;
+        let practicedData;
         if (calendar[i].practiced === true) {
           css = ' class="practiced"';
+          practicedData = ' data-practiced="true"';
         } else if (calendar[i].practiced === false) {
           css = ' class="skipped"';
+          practicedData = ' data-practiced="false"';
         }
 
+        let thisMonthData;
         if (calendar[i].thisMonth !== true) {
           css = ' class="not-this-month"';
+          thisMonthData = ' data-this-month="false"';
+        } else {
+          // thisMonthData = ' data-this-month="true"';
         }
 
         // Add a note marker if necessary.
         let note;
+        let noteData;
         if (calendar[i].note) {
           note = `<img src="/img/note.svg" alt="[Practice note]" title="${calendar[i].note}">`;
+          // noteData = ` data-has-note='true'`;
+        }
+
+        // Add data about whether this date was logged or generated
+        let loggedData;
+        if (calendar[i].logged === true) {
+          loggedData = ` data-logged='true'`;
+        } else if (calendar[i].logged === false) {
+          loggedData = ` data-logged='false'`;
+        }
+
+        // Add data about whether this date should be editable
+        let editableData;
+        if (calendar[i].editable === true) {
+          editableData = ` data-editable="true"`;
         }
 
         // And print a list item.
       %>
-        <li data-date="<%= calendar[i].fullDate %>"<%- css %>><%- note %><%= calendar[i].day %></li>
+        <li data-date="<%= calendar[i].fullDate %>"<%- practicedData %><%- loggedData %><%- noteData %><%- thisMonthData %><%- editableData; %>><%- note %><%= calendar[i].day %></li>
       <% } %>
     </ol>
     <div class="editNote-div">

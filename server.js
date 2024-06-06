@@ -122,75 +122,93 @@ async function getMonth(year, month) {
     return { year: queryYear, month: queryMonth, records: records.rows };
 }
 
-async function getToday() {
+async function getRecent() {
+  // Get practice records from yesterday and today
   const sql = `
   SELECT 
+    practice_date,
     has_practiced, 
     note
   FROM practice_records
   WHERE
     student = 1 AND
-    practice_date = CAST(NOW() as Date);
+    practice_date BETWEEN 
+      CURRENT_DATE - INTERVAL '1 day' AND
+      CURRENT_DATE
+  ORDER BY practice_date;
   `;
-  const record = await pool.query(sql);
+  const records = await pool.query(sql);
 
-  if (record.rowCount > 0) {
-    return { logged: true, practiced: record.rows[0].has_practiced, note: record.rows[0].note };
-  } else {
-    return { logged: false };
+  // Assume the student has _not_ logged either day.
+  const today = { logged: false };
+  const yesterday = { logged: false };
+
+  // But then check to see if they have.
+  for (let i = 0; i < records.rows.length; i++) {
+    const recordDate = records.rows[i].practice_date;
+
+    // Get date objects to check against for today and yesterday.
+    const todayDate = new Date();
+    todayDate.setHours(0, 0, 0, 0);
+    const yesterdayDate = new Date(todayDate)
+    yesterdayDate.setDate(todayDate.getDate() - 1);
+
+    // For whatever date we find, update the information.
+    if (recordDate.toString() === todayDate.toString()) {
+      today.logged = true;
+      today.has_practiced = records.rows[i].has_practiced;
+      today.note = records.rows[i].note;
+    } else if (recordDate.toString() === yesterdayDate.toString()) {
+      yesterday.logged = true;
+      yesterday.has_practiced = records.rows[i].has_practiced;
+      yesterday.note = records.rows[i].note;
+    }
   }
+
+  return { today, yesterday };
 }
 
 // Serve main page
 app.get("/", async function(request, response) {
   const streak = await getStreak();
   const practices = await getMonth();
-  const todaysPractice = await getToday();
-  response.render("home", { streak, todaysPractice, practices });
-});
-
-app.post("/", function (request, response) {
-  const sql = `
-  INSERT INTO practice_records
-    (student, has_practiced, note)
-  VALUES
-    (($1), ($2), ($3));
-  `;
-  const sqlParameters = [1, request.body.practiced, request.body.note];
-
-  pool.query(sql, sqlParameters, async function (error) {
-    const streak = await getStreak();
-    const practices = await getMonth();
-    const todaysPractice = await getToday();
-
-    if (error) {
-      console.log(error)
-      response.render("home", { streak, todaysPractice, practices });
-    } else {
-      console.log("New practice session logged.");
-      response.render("home", { streak, todaysPractice, practices });    
-    }
-  });
+  const recentPractice = await getRecent();
+  response.render("home", { streak, recentPractice, practices });
 });
 
 app.get("/:year/:month", async function (request, response) {
   const streak = await getStreak();
   const practices = await getMonth(request.params.year, request.params.month);
-  const todaysPractice = await getToday();
-  response.render("home", { streak, todaysPractice, practices });
+  const recentPractice = await getRecent();
+  response.render("home", { streak, recentPractice, practices });
 });
 
 app.post("/:year/:month/:day", async function (request, response) {
   const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
-  const sql = `
-  UPDATE practice_records
-  SET
-    note = ($3)
-  WHERE
-    student = ($1) AND
-    practice_date = ($2);
-  `;
-  const sqlParameters = [1, dateString, request.body.note];
+  let sql;
+  let sqlParameters;
+
+  if (request.body.alreadyLogged === "true") {
+    sqlParameters = [1, dateString, request.body.note];
+    sql = `
+    UPDATE practice_records
+    SET
+      note = ($3)
+    WHERE
+      student = ($1) AND
+      practice_date = ($2);
+    `;
+  } else {
+    let practiced = request.  body.practiced || false;
+    sqlParameters = [1, dateString, request.body.note, practiced];
+
+    sql = `
+    INSERT INTO practice_records
+      (student, practice_date, note, has_practiced)
+    VALUES
+      (($1), ($2), ($3), ($4));      
+    `;
+  }
 
   pool.query(sql, sqlParameters, function (error) {
     if (error) {
