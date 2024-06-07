@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="grc">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -25,30 +25,28 @@
       const day = today.getDate().toString().padStart(2, "0");
       const postURL = `/${year}/${month}/${day}`;
     %>
-    <form action="<%= postURL %>" method="POST">
-      
-      <h3>ἤσκησας σήμερον;</h3>
-      <div>
+    <form action="<%= postURL %>" method="POST" class="recordPractice">
+  
+      <h3 class="recordPractice-header">ἤσκησας σήμερον;</h3>
+      <div class="recordPractice-answerYes">
         <input type="radio" name="practiced" id="practiced-true" value="true">
         <label for="practiced-true"><strong>Ναί</strong>, ἤσκησα!</label>
       </div>
 
-      <div>
+      <div class="recordPractice-answerNo">
         <input type="radio" name="practiced" id="practiced-false" value="false">
         <label for="practiced-false"><strong>Οὐχί</strong>, οὐκ ἤσκησα σήμερον.</label>
       </div>
 
-      <div>
+      <div class="recordPractice-addNote">
         <label for="note">Τὶ ἐποίησας;</label>
         <textarea name="note" id="note" maxlength="100"></textarea>
       </div>
 
-      <button type="submit">καταπέμπειν</button>
+      <button type="submit" class="recordPractice-submit">καταπέμπειν</button>
     </form>
     <% 
-    } 
-
-    if (recentPractice.yesterday.logged === false) {
+    } else if (recentPractice.yesterday.logged === false) {
       // Build a URL for yesterday's date
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
@@ -57,26 +55,26 @@
       const day = yesterday.getDate().toString().padStart(2, "0");
       const postURL = `/${year}/${month}/${day}`;
     %>
-      <form action="<%= postURL %>" method="POST">
-        
-        <h3>χθές ἤσκησας;</h3>
-        <div>
-          <input type="radio" name="practiced" id="practiced-true" value="true">
-          <label for="practiced-true"><strong>Ναί</strong>, ἤσκησα!</label>
-        </div>
+    <form action="<%= postURL %>" method="POST" class="recordPractice">
   
-        <div>
-          <input type="radio" name="practiced" id="practiced-false" value="false">
-          <label for="practiced-false"><strong>Οὐχί</strong>, οὐκ ἤσκησα σήμερον.</label>
-        </div>
-  
-        <div>
-          <label for="note">Τὶ ἐποίησας;</label>
-          <textarea name="note" id="note" maxlength="100"></textarea>
-        </div>
+      <h3 class="recordPractice-header">χθὲς ἤσκησας;</h3>
+      <div class="recordPractice-answerYes">
+        <input type="radio" name="practiced" id="practiced-true" value="true">
+        <label for="practiced-true"><strong>Ναί</strong>, ἤσκησα!</label>
+      </div>
 
-        <button type="submit">καταπέμπειν</button>
-      </form>
+      <div class="recordPractice-answerNo">
+        <input type="radio" name="practiced" id="practiced-false" value="false">
+        <label for="practiced-false"><strong>Οὐχί</strong>, χθές οὐκ ἤσκησα.</label>
+      </div>
+
+      <div class="recordPractice-addNote">
+        <label for="note">Τὶ ἐποίησας;</label>
+        <textarea name="note" id="note" maxlength="100"></textarea>
+      </div>
+
+      <button type="submit" class="recordPractice-submit">καταπέμπειν</button>
+    </form>
     <% 
     } 
 
@@ -89,7 +87,7 @@
       streakString = "You've practiced for <strong>" + streak + " days</strong> in a row. Keep it up!";
     }
     %>
-    <p><%- streakString %></p>
+    <p class="displayStreak" lang="en"><%- streakString %></p>
 
     <%
     // [1] Get the date objects we'll need.
@@ -176,62 +174,59 @@
     const lastMonthUrl = `/${lastMonth.getFullYear()}/${(lastMonth.getMonth() + 1).toString().padStart(2, "0")}`;
     const nextMonthUrl = `/${nextMonth.getFullYear()}/${(nextMonth.getMonth() + 1).toString().padStart(2, "0")}`;
     %>
-    <h3 class="calendar-heading">
-      <a href="<%= lastMonthUrl %>">«</a>
-        <%= currentMonth %>
-      <a href="<%= nextMonthUrl %>">»</a>
-    </h3>
-    <ol class="calendar">
-      <% 
-      // For each item in the calendar array
-      for (let i = 0; i < calendar.length; i++) {
-        // Define the necessary styles.
-        let css;
-        let practicedData;
-        if (calendar[i].practiced === true) {
-          css = ' class="practiced"';
-          practicedData = ' data-practiced="true"';
-        } else if (calendar[i].practiced === false) {
-          css = ' class="skipped"';
-          practicedData = ' data-practiced="false"';
-        }
-
-        let thisMonthData;
-        if (calendar[i].thisMonth !== true) {
-          css = ' class="not-this-month"';
-          thisMonthData = ' data-this-month="false"';
-        } else {
-          // thisMonthData = ' data-this-month="true"';
-        }
-
-        // Add a note marker if necessary.
-        let note;
-        let noteData;
-        if (calendar[i].note) {
-          note = `<img src="/img/note.svg" alt="[Practice note]" title="${calendar[i].note}">`;
-          // noteData = ` data-has-note='true'`;
-        }
-
-        // Add data about whether this date was logged or generated
-        let loggedData;
-        if (calendar[i].logged === true) {
-          loggedData = ` data-logged='true'`;
-        } else if (calendar[i].logged === false) {
-          loggedData = ` data-logged='false'`;
-        }
-
-        // Add data about whether this date should be editable
-        let editableData;
-        if (calendar[i].editable === true) {
-          editableData = ` data-editable="true"`;
-        }
-
-        // And print a list item.
-      %>
-        <li data-date="<%= calendar[i].fullDate %>"<%- practicedData %><%- loggedData %><%- noteData %><%- thisMonthData %><%- editableData; %>><%- note %><%= calendar[i].day %></li>
-      <% } %>
-    </ol>
-    <div class="editNote-div">
+    <div class="calendar" lang="en">
+      <h3 class="calendar-heading">
+        <a href="<%= lastMonthUrl %>" class="calendar-changeMonth">«</a>
+          <%= currentMonth %>
+        <a href="<%= nextMonthUrl %>" class="calendar-changeMonth">»</a>
+      </h3>
+      <ol class="calendar-list">
+        <%
+        // For each item in the calendar array
+        for (let i = 0; i < calendar.length; i++) {
+          // Define the necessary styles.
+          let css;
+          let practicedData;
+          if (calendar[i].practiced === true) {
+            css = ' class="practiced"';
+            practicedData = ' data-practiced="true"';
+          } else if (calendar[i].practiced === false) {
+            css = ' class="skipped"';
+            practicedData = ' data-practiced="false"';
+          }
+          let thisMonthData;
+          if (calendar[i].thisMonth !== true) {
+            css = ' class="not-this-month"';
+            thisMonthData = ' data-this-month="false"';
+          } else {
+            // thisMonthData = ' data-this-month="true"';
+          }
+          // Add a note marker if necessary.
+          let note;
+          let noteData;
+          if (calendar[i].note) {
+            note = `<img src="/img/note.svg" width="15" alt="[Practice note]" title="${calendar[i].note}">`;
+            // noteData = ` data-has-note='true'`;
+          }
+          // Add data about whether this date was logged or generated
+          let loggedData;
+          if (calendar[i].logged === true) {
+            loggedData = ` data-logged='true'`;
+          } else if (calendar[i].logged === false) {
+            loggedData = ` data-logged='false'`;
+          }
+          // Add data about whether this date should be editable
+          let editableData;
+          if (calendar[i].editable === true) {
+            editableData = ` data-editable="true"`;
+          }
+          // And print a list item.
+        %>
+          <li class="calendar-day" data-date="<%= calendar[i].fullDate %>"<%- practicedData %><%- loggedData %><%- noteData %><%- thisMonthData %><%- editableData; %>><%- note %><%= calendar[i].day %></li>
+        <% } %>
+      </ol>
+      <div class="calendar-viewNote">
+      </div>
     </div>
   </main>
 </body>
