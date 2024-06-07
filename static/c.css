@@ -52,9 +52,23 @@ GLOBAL
   font-size:20px;
 }
 
+body {
+  background-color: hsl(30deg 100% 100%);
+  padding: 2rem 5%;
+}
+
 /**
 HEADER
 **/
+
+header {
+  line-height: 1.1;
+  margin-bottom: 1rem;
+}
+
+header p {
+  color: #555;
+}
 
 /**
 PRACTICE FORM
