@@ -8,6 +8,16 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 ## Versions
 
+### v3: Re-figure the UI
+
+- [ ] The student should be prompted to log today's practice
+- [ ] The student should be prompted to log yesterday's practice
+- [ ] The calendar should be smaller and more concise
+- [ ] The calendar should clearly mark practice sessions
+- [ ] The calendar should clearly mark notes
+- [ ] There should be an easy way to read notes
+- [ ] There should be an easy way to edit notes
+
 ### v2: More sophisticated controls
 
 - [X] The student should be able to view past records

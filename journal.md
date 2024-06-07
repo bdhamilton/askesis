@@ -1,5 +1,15 @@
 # Journal
 
+## Juny 6, 2024
+
+## 9pm
+
+I've been fiddling with lots of little things today. The app is slightly further along, but I hate the way I've been handling this process. Things feel wildly disorganized, and the code is too unwieldy for me even to be able to tell whether it's very efficient. I really need to learn how to better atomize and organize as I go.
+
+That said, v2 is complete. The student can see any record; they can update today's or yesterday's record; they can modify notes from any day in the past. The database access functions are decent, and at least they work. 
+
+What's next for v3? It's either work on the UI or work on dynamic page updates. Somewhat against my better judgment, I think I'll update the UI. I'm running into a little difficulty coding this up because I haven't totally settled how I want this to look to or work for the student. Once the UI is more nearly locked in, I think it'll be easier to decide what I need to do.
+
 ## June 5, 2024
 
 ## 11pm
@@ -73,13 +83,6 @@ Write calendar:
     Define styles
     Add note
     Print a list item
-
-
-
-
-
-
-
 
 ## June 4, 2024
 
