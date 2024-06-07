@@ -86,7 +86,7 @@ PRACTICE FORM
   background-color: hsl(50deg, 60%, 95%);
   box-shadow: 0px 0px 5px hsl(50deg, 20%, 65%);
   margin: .5rem 0;
-  padding: 1rem;
+  padding: .8rem;
 }
 
 .recordPractice-header {
@@ -95,26 +95,29 @@ PRACTICE FORM
 
 .recordPractice-answers {
   display: flex;
-  gap: .5rem;
+  gap: .3rem;
 }
 
 .recordPractice-answers label {
   background-color: hsl(50deg, 60%, 98%);
   border: 1px solid hsl(50deg, 30%, 90%);
   border-radius: 15px;
-  margin: .5rem 0;
-  padding: .5rem;
+  margin: .3rem 0;
+  padding: .3rem .5rem;
   width: 50%;
+}
+
+.recordPractice-answers label:hover {
+  background-color: hsl(50deg, 60%, 90%);
+}
+
+.recordPractice-answers label:has(input:checked) {
+  background-color: hsl(50deg, 60%, 83%);
 }
 
 .recordPractice-answers input[type="radio"] {
   width: 10%;
 }
-
-.recordPractice-addNote {
-  /* div with label and textarea */
-}
-
 .recordPractice-addNote label {
   font-weight: bold;
   display: block;
@@ -124,17 +127,33 @@ PRACTICE FORM
   background-color: hsl(50deg, 60%, 98%);
   border: 1px solid hsl(50deg, 30%, 90%);
   border-radius: 15px;
+  font-size: .9rem;
   padding: .5rem;
   resize: none;
   width: 100%;
 }
 
+.recordPractice-addNote textarea:focus {
+  background-color: hsl(50deg, 60%, 90%);
+}
+
 .recordPractice-submit {
   background-color: hsl(50deg, 60%, 78%);
-  border: 1px solid hsl(50deg, 30%, 90%);
-  margin-top: .5rem;
+  border: 0;
+  box-shadow: 2px 2px 2px hsl(50deg, 20%, 65%);
+  margin-top: .3rem;
   width: 100%;
 }
+
+.recordPractice-submit:hover {
+  background-color: hsl(50deg, 60%, 83%);
+}
+
+.recordPractice-submit:active {
+  transform: translateY(1px);
+  box-shadow: 1px 1px 1px hsl(50deg, 20%, 65%);
+}
+
 
 /**
 CALENDAR
