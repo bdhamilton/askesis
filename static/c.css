@@ -60,6 +60,10 @@ main {
   max-width: 60ch;
 }
 
+[lang="en"] {
+  font-family: Helvetica;
+  font-size:16px;
+}
 /**
 HEADER
 **/
@@ -154,7 +158,76 @@ PRACTICE FORM
   box-shadow: 1px 1px 1px hsl(50deg, 20%, 65%);
 }
 
+/**
+STATS GENERAL
+**/
+
+.stats {
+  display: grid;
+  gap: 3rem;
+  grid-template-columns: repeat(2, 1fr);
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid #eee;
+}
+
+.stats h3 {
+  line-height: 1;
+}
 
 /**
 CALENDAR
 **/
+
+.calendar {
+  max-width: 50%;
+  min-width: 14rem;
+  font-size: .8rem;
+}
+
+.calendar-heading {
+  font-size: .8rem;
+  line-height: 1;
+  padding-bottom: .5rem;
+  text-align: center;
+}
+
+.calendar-heading a {
+  color: hsl(50deg, 60%, 38%);
+  padding: 0 1rem;
+  text-decoration: none;
+}
+
+.calendar-list {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  list-style: none;
+  padding: 0;
+}
+
+.calendar-day {
+  border: 1px solid hsl(50deg, 60%, 78%);
+  border-radius: calc(2rem / 2);
+  font-size: .6rem;
+  height: 2rem;
+  line-height: 1;
+  padding-top: .7rem;
+  text-align: center;
+  width: 2rem;
+}
+
+.calendar-day[data-practiced="true"] {
+  background-color: hsl(50deg, 60%, 78%);
+}
+
+.calendar-day[data-this-month="false"] {
+  visibility: hidden;
+}
+
+.calendar-day:has(> img)::after {
+  content: "*";
+}
+
+.calendar-day img {
+  display: none;
+}

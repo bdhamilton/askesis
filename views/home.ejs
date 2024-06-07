@@ -91,145 +91,151 @@
       streakString = "You've practiced for <strong>" + streak + " days</strong> in a row. Keep it up!";
     }
     %>
-    <p class="displayStreak" lang="en"><%- streakString %></p>
-
-    <%
-    // [1] Get the date objects we'll need.
-
-    const today = new Date();
-    const monthToDisplay = new Date(practices.year, practices.month - 1, 1);
-
-    // [2] Find starting date and total size of monthly calendar.
-
-    // Find the starting day by subtracting the index of
-    // the first day from the current date.
-    const nextDayToCreate = new Date(monthToDisplay);
-    nextDayToCreate.setDate(monthToDisplay.getDate() - monthToDisplay.getDay());
-
-    // Find the total size by finding the next multiple of seven
-    // beyond the number of the days we already know we need.
-    const daysInMonth = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth() + 1, 0).getDate();
-    const daysNeededSoFar = monthToDisplay.getDay() + daysInMonth;
-    const totalDaysToCreate = Math.ceil(daysNeededSoFar / 7) * 7;
-
-    // [3] Build a calendar array
-
-    const calendar = [];
-
-    // As we build the array, we're going to check each day against our database.
-    let nextRecordIndex = 0;
-    let nextRecord = practices.records[nextRecordIndex];
-
-    // For each day we need to create:
-    for (let i = 0; i < totalDaysToCreate; i++) {
-      // Build date string (manually to avoid accidental
-      // time zone changes that come with int'l methods)
-      const year = nextDayToCreate.getFullYear();
-      const month = (nextDayToCreate.getMonth() + 1).toString().padStart(2, "0");
-      const day = nextDayToCreate.getDate().toString().padStart(2, "0");
-      const dateString = `${year}-${month}-${day}`;
-
-      // Build an object with this day's information.
-      const calendarDay = {};
-
-      calendarDay.fullDate = dateString;
-      calendarDay.day = nextDayToCreate.getDate();
-
-      // If we're in the selected month, add practice records:
-      if (nextDayToCreate.getMonth() === monthToDisplay.getMonth()) {
-        calendarDay.thisMonth = true;
-
-        // If have a database record for today, use it.
-        if (nextRecord && dateString === nextRecord.date) {
-          calendarDay.practiced = nextRecord.practiced;
-          calendarDay.note = nextRecord.note;
-          calendarDay.logged = true;
-          calendarDay.editable = true;
+    <div class="stats">
+      <div class="numbers">
+        <h3>ὑπομήνατα</h3>
+        <p class="displayStreak" lang="en"><%- streakString %></p>
+      </div>
   
-          // And update the next record.
-          nextRecordIndex++;
-          nextRecord = practices.records[nextRecordIndex];
-        } else if (nextDayToCreate < today.setHours(0, 0, 0, 0)) {
-          // If we have no record and the date is past:
-          calendarDay.logged = false;
-          calendarDay.practiced = false;
-          calendarDay.editable = true;
+  
+      <%
+      // [1] Get the date objects we'll need.
+  
+      const today = new Date();
+      const monthToDisplay = new Date(practices.year, practices.month - 1, 1);
+  
+      // [2] Find starting date and total size of monthly calendar.
+  
+      // Find the starting day by subtracting the index of
+      // the first day from the current date.
+      const nextDayToCreate = new Date(monthToDisplay);
+      nextDayToCreate.setDate(monthToDisplay.getDate() - monthToDisplay.getDay());
+  
+      // Find the total size by finding the next multiple of seven
+      // beyond the number of the days we already know we need.
+      const daysInMonth = new Date(monthToDisplay.getFullYear(), monthToDisplay.getMonth() + 1, 0).getDate();
+      const daysNeededSoFar = monthToDisplay.getDay() + daysInMonth;
+      const totalDaysToCreate = Math.ceil(daysNeededSoFar / 7) * 7;
+  
+      // [3] Build a calendar array
+  
+      const calendar = [];
+  
+      // As we build the array, we're going to check each day against our database.
+      let nextRecordIndex = 0;
+      let nextRecord = practices.records[nextRecordIndex];
+  
+      // For each day we need to create:
+      for (let i = 0; i < totalDaysToCreate; i++) {
+        // Build date string (manually to avoid accidental
+        // time zone changes that come with int'l methods)
+        const year = nextDayToCreate.getFullYear();
+        const month = (nextDayToCreate.getMonth() + 1).toString().padStart(2, "0");
+        const day = nextDayToCreate.getDate().toString().padStart(2, "0");
+        const dateString = `${year}-${month}-${day}`;
+  
+        // Build an object with this day's information.
+        const calendarDay = {};
+  
+        calendarDay.fullDate = dateString;
+        calendarDay.day = nextDayToCreate.getDate();
+  
+        // If we're in the selected month, add practice records:
+        if (nextDayToCreate.getMonth() === monthToDisplay.getMonth()) {
+          calendarDay.thisMonth = true;
+  
+          // If have a database record for today, use it.
+          if (nextRecord && dateString === nextRecord.date) {
+            calendarDay.practiced = nextRecord.practiced;
+            calendarDay.note = nextRecord.note;
+            calendarDay.logged = true;
+            calendarDay.editable = true;
+  
+            // And update the next record.
+            nextRecordIndex++;
+            nextRecord = practices.records[nextRecordIndex];
+          } else if (nextDayToCreate < today.setHours(0, 0, 0, 0)) {
+            // If we have no record and the date is past:
+            calendarDay.logged = false;
+            calendarDay.practiced = false;
+            calendarDay.editable = true;
+          }
         }
+  
+        // Add the day to the calendar.
+        calendar.push(calendarDay);
+  
+        // Increment the day
+        nextDayToCreate.setDate(nextDayToCreate.getDate() + 1);
       }
-
-      // Add the day to the calendar.
-      calendar.push(calendarDay);
-
-      // Increment the day
-      nextDayToCreate.setDate(nextDayToCreate.getDate() + 1);
-    }
-
-    // [4] Print the calendar.
-
-    // E.g., "June 2024"
-    const currentMonth = monthToDisplay.toLocaleString('default', { month: 'long', year: 'numeric' });
-
-    const lastMonth = new Date(monthToDisplay);
-    lastMonth.setMonth(monthToDisplay.getMonth() - 1);
-    const nextMonth = new Date(monthToDisplay);
-    nextMonth.setMonth(monthToDisplay.getMonth() + 1);
-
-    // E.g., "/2024/05"
-    const lastMonthUrl = `/${lastMonth.getFullYear()}/${(lastMonth.getMonth() + 1).toString().padStart(2, "0")}`;
-    const nextMonthUrl = `/${nextMonth.getFullYear()}/${(nextMonth.getMonth() + 1).toString().padStart(2, "0")}`;
-    %>
-    <div class="calendar" lang="en">
-      <h3 class="calendar-heading">
-        <a href="<%= lastMonthUrl %>" class="calendar-changeMonth">«</a>
-          <%= currentMonth %>
-        <a href="<%= nextMonthUrl %>" class="calendar-changeMonth">»</a>
-      </h3>
-      <ol class="calendar-list">
-        <%
-        // For each item in the calendar array
-        for (let i = 0; i < calendar.length; i++) {
-          // Define the necessary styles.
-          let css;
-          let practicedData;
-          if (calendar[i].practiced === true) {
-            css = ' class="practiced"';
-            practicedData = ' data-practiced="true"';
-          } else if (calendar[i].practiced === false) {
-            css = ' class="skipped"';
-            practicedData = ' data-practiced="false"';
-          }
-          let thisMonthData;
-          if (calendar[i].thisMonth !== true) {
-            css = ' class="not-this-month"';
-            thisMonthData = ' data-this-month="false"';
-          } else {
-            // thisMonthData = ' data-this-month="true"';
-          }
-          // Add a note marker if necessary.
-          let note;
-          let noteData;
-          if (calendar[i].note) {
-            note = `<img src="/img/note.svg" width="15" alt="[Practice note]" title="${calendar[i].note}">`;
-            // noteData = ` data-has-note='true'`;
-          }
-          // Add data about whether this date was logged or generated
-          let loggedData;
-          if (calendar[i].logged === true) {
-            loggedData = ` data-logged='true'`;
-          } else if (calendar[i].logged === false) {
-            loggedData = ` data-logged='false'`;
-          }
-          // Add data about whether this date should be editable
-          let editableData;
-          if (calendar[i].editable === true) {
-            editableData = ` data-editable="true"`;
-          }
-          // And print a list item.
-        %>
-          <li class="calendar-day" data-date="<%= calendar[i].fullDate %>"<%- practicedData %><%- loggedData %><%- noteData %><%- thisMonthData %><%- editableData; %>><%- note %><%= calendar[i].day %></li>
-        <% } %>
-      </ol>
-      <div class="calendar-viewNote">
+  
+      // [4] Print the calendar.
+  
+      // E.g., "June 2024"
+      const currentMonth = monthToDisplay.toLocaleString('default', { month: 'long', year: 'numeric' });
+  
+      const lastMonth = new Date(monthToDisplay);
+      lastMonth.setMonth(monthToDisplay.getMonth() - 1);
+      const nextMonth = new Date(monthToDisplay);
+      nextMonth.setMonth(monthToDisplay.getMonth() + 1);
+  
+      // E.g., "/2024/05"
+      const lastMonthUrl = `/${lastMonth.getFullYear()}/${(lastMonth.getMonth() + 1).toString().padStart(2, "0")}`;
+      const nextMonthUrl = `/${nextMonth.getFullYear()}/${(nextMonth.getMonth() + 1).toString().padStart(2, "0")}`;
+      %>
+      <div class="calendar" lang="en">
+        <h3 class="calendar-heading">
+          <a href="<%= lastMonthUrl %>" class="calendar-changeMonth">«</a>
+            <%= currentMonth %>
+          <a href="<%= nextMonthUrl %>" class="calendar-changeMonth">»</a>
+        </h3>
+        <ol class="calendar-list">
+          <%
+          // For each item in the calendar array
+          for (let i = 0; i < calendar.length; i++) {
+            // Define the necessary styles.
+            let css;
+            let practicedData;
+            if (calendar[i].practiced === true) {
+              css = ' class="practiced"';
+              practicedData = ' data-practiced="true"';
+            } else if (calendar[i].practiced === false) {
+              css = ' class="skipped"';
+              practicedData = ' data-practiced="false"';
+            }
+            let thisMonthData;
+            if (calendar[i].thisMonth !== true) {
+              css = ' class="not-this-month"';
+              thisMonthData = ' data-this-month="false"';
+            } else {
+              // thisMonthData = ' data-this-month="true"';
+            }
+            // Add a note marker if necessary.
+            let note;
+            let noteData;
+            if (calendar[i].note) {
+              note = `<img src="/img/note.svg" width="15" alt="[Practice note]" title="${calendar[i].note}">`;
+              // noteData = ` data-has-note='true'`;
+            }
+            // Add data about whether this date was logged or generated
+            let loggedData;
+            if (calendar[i].logged === true) {
+              loggedData = ` data-logged='true'`;
+            } else if (calendar[i].logged === false) {
+              loggedData = ` data-logged='false'`;
+            }
+            // Add data about whether this date should be editable
+            let editableData;
+            if (calendar[i].editable === true) {
+              editableData = ` data-editable="true"`;
+            }
+            // And print a list item.
+          %>
+            <li class="calendar-day" data-date="<%= calendar[i].fullDate %>"<%- practicedData %><%- loggedData %><%- noteData %><%- thisMonthData %><%- editableData; %>><%- note %><%= calendar[i].day %></li>
+          <% } %>
+        </ol>
+        <div class="calendar-viewNote">
+        </div>
       </div>
     </div>
   </main>
