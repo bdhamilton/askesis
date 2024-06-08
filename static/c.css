@@ -163,16 +163,21 @@ STATS GENERAL
 **/
 
 .stats {
-  display: grid;
-  gap: 3rem;
-  grid-template-columns: repeat(2, 1fr);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #eee;
 }
 
+.numbers {
+  flex: 2;
+}
+
 .stats h3 {
   line-height: 1;
+  margin-bottom: .5rem;
 }
 
 /**
@@ -180,15 +185,16 @@ CALENDAR
 **/
 
 .calendar {
-  max-width: 50%;
-  min-width: 14rem;
+  flex: 3;
   font-size: .8rem;
+  min-width: 14rem;
+  max-width: 14rem;
+  margin: auto;
 }
 
 .calendar-heading {
   font-size: .8rem;
   line-height: 1;
-  padding-bottom: .5rem;
   text-align: center;
 }
 
@@ -211,9 +217,16 @@ CALENDAR
   font-size: .6rem;
   height: 2rem;
   line-height: 1;
-  padding-top: .7rem;
-  text-align: center;
   width: 2rem;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.calendar-day[data-editable="true"]:hover {
+  background-color: hsl(50deg, 60%, 88%);
+  cursor: pointer;
 }
 
 .calendar-day[data-practiced="true"] {

@@ -10,7 +10,7 @@ function writeUpdateForm(event) {
 
   const label = document.createElement("label");
   label.setAttribute("for", "note");
-  label.innerText = "Τὶ ἐποίησας;";
+  label.innerText = formatDateString(dateString);
 
   const textarea = document.createElement("textarea");
   textarea.setAttribute("name", "note");
@@ -31,7 +31,7 @@ function writeUpdateForm(event) {
   form.appendChild(loggedInput);
   form.appendChild(submitButton);
 
-  const editNoteDiv = document.querySelector(".editNote-div");
+  const editNoteDiv = document.querySelector(".calendar-viewNote");
   editNoteDiv.innerHTML = '';
   editNoteDiv.appendChild(form);
 }
@@ -40,4 +40,10 @@ function writeUpdateForm(event) {
 const calendarCells = document.querySelectorAll(".calendar li[data-editable='true']");
 for (let i = 0; i < calendarCells.length; i++) {
   calendarCells[i].addEventListener("click", writeUpdateForm);
+}
+
+function formatDateString(dateString) {
+  const dateElements = dateString.split("-");
+  const dateObject = new Date(dateElements[0], dateElements[1] - 1, dateElements[2]);
+  return dateObject.toLocaleDateString('default', { month: 'long', day: 'numeric' });
 }
