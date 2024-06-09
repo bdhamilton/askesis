@@ -18,6 +18,7 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 - [ ] Helper functions should clarify high level operation
 - [ ] All functions should be checked for correctness
 - [ ] All functions should be properly commented
+- [ ] Rewrite calendar to go to distinct day pages?
 
 ### v3: Re-figure the UI
 

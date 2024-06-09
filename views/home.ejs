@@ -82,20 +82,11 @@
     <% 
     } 
 
-    let streakString;
-    if (streak === 0) {
-      streakString = "Time to start a new streak!";
-    } else if (streak === 1) {
-      streakString = "You're at the start of a new streak. Keep it going!";
-    } else {
-      streakString = "You've practiced for <strong>" + streak + " days</strong> in a row. Keep it up!";
-    }
     const greekNumbers = ['οὐδεμία', 'μία', 'δύο', 'τρεῖς','τέσσαρες', 'πέντε', 'ἕξ', 'ἑπτὰ']
-
-    let recentPractices = `<strong>${greekNumbers[streak]}</strong> τῶν ἑπτὰ παρελθουσῶν ἡμερῶν ἤσκηκας.`;
+    let pastSevenMessage = `<strong>${greekNumbers[countFromPastSevenDays]}</strong> τῶν ἑπτὰ παρελθουσῶν ἡμερῶν ἤσκηκας.`;
     %>
     <div class="displayRecords">
-      <p class="notes-pastWeek"><%- recentPractices %></p>
+      <p class="notes-pastWeek"><%- pastSevenMessage %></p>
 
       <%
       // [1] Get the date objects we'll need.

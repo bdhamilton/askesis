@@ -12,7 +12,7 @@ app.set('view engine', 'ejs');
 app.set('views', './views/');
 app.use(express.static(__dirname + '/static'));
 
-// Don't know if I need these yet:
+// Set up to parse form input
 app.use(express.json());
 app.use(express.urlencoded());
 
@@ -45,18 +45,96 @@ CREATE TABLE IF NOT EXISTS
   );
 `);
 
-pool.query(`
-CREATE TABLE IF NOT EXISTS
-  teacher_notes (
-    note_id SERIAL PRIMARY KEY,
-    student INT
-      REFERENCES students (student_id),
-    note TEXT,
-    is_private BOOLEAN,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-  );
-`);
+// pool.query(`
+// CREATE TABLE IF NOT EXISTS
+//   teacher_notes (
+//     note_id SERIAL PRIMARY KEY,
+//     student INT
+//       REFERENCES students (student_id),
+//     note TEXT,
+//     is_private BOOLEAN,
+//     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+//   );
+// `);
 
+// Serve main page
+app.get("/", async function(request, response) {
+  const countFromPastSevenDays = await getCountFromPastSevenDays();
+  const practices = await getMonth();
+  const recentPractice = await getRecent();
+  response.render("home", { countFromPastSevenDays, recentPractice, practices });
+});
+
+app.get("/:year/:month", async function (request, response) {
+  const countFromPastSevenDays = await getCountFromPastSevenDays();
+  const practices = await getMonth(request.params.year, request.params.month);
+  const recentPractice = await getRecent();
+  response.render("home", { countFromPastSevenDays, recentPractice, practices });
+});
+
+app.post("/:year/:month/:day", async function (request, response) {
+  const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
+  let sql;
+  let sqlParameters;
+
+  if (request.body.alreadyLogged === "true") {
+    sqlParameters = [1, dateString, request.body.note];
+    sql = `
+    UPDATE practice_records
+    SET
+      note = ($3)
+    WHERE
+      student = ($1) AND
+      practice_date = ($2);
+    `;
+  } else {
+    let practiced = request.  body.practiced || false;
+    sqlParameters = [1, dateString, request.body.note, practiced];
+
+    sql = `
+    INSERT INTO practice_records
+      (student, practice_date, note, has_practiced)
+    VALUES
+      (($1), ($2), ($3), ($4));      
+    `;
+  }
+
+  pool.query(sql, sqlParameters, function (error) {
+    if (error) {
+      console.log(error);
+    }
+
+    response.redirect("/");
+  });
+});
+
+/**
+ * Query the database for the number of times the student
+ * has practiced in the past seven days.
+ * @returns {number} Number of practice sessions out of seven.
+ */
+async function getCountFromPastSevenDays() {
+  const sql = `
+  SELECT 
+    COUNT(*)
+  FROM practice_records
+  WHERE
+    student = ($1) AND
+    has_practiced = true AND
+    practice_date BETWEEN (CURRENT_TIMESTAMP - Interval '7 days') AND CURRENT_TIMESTAMP
+  ;`;
+  const sqlParameters = [1];
+  const records = await pool.query(sql, sqlParameters);
+
+  // Return the number of the count
+  return records.rows[0].count;
+}
+
+/**
+ * Query the database for the number of days in a row
+ * the student has practiced.
+ * @returns {number} Length of streak
+ */
 async function getStreak() {
   const streakSql = `
   SELECT 
@@ -98,6 +176,12 @@ async function getStreak() {
   }
 }
 
+/**
+ * Query the database for one month's worth of records
+ * @param {number} year Year for which you want records 
+ * @param {number} month Month for which you want records (Jan = 1)
+ * @returns {array} Array of objects, one for each day of the month
+ */
 async function getMonth(year, month) {
   const today = new Date();
   const queryYear = year || today.getFullYear();
@@ -122,6 +206,10 @@ async function getMonth(year, month) {
     return { year: queryYear, month: queryMonth, records: records.rows };
 }
 
+/**
+ * Query the database for practice records from yesterday and today
+ * @returns {Object} Object containing `today` and `yesterday` objects
+ */
 async function getRecent() {
   // Get practice records from yesterday and today
   const sql = `
@@ -167,54 +255,3 @@ async function getRecent() {
 
   return { today, yesterday };
 }
-
-// Serve main page
-app.get("/", async function(request, response) {
-  const streak = await getStreak();
-  const practices = await getMonth();
-  const recentPractice = await getRecent();
-  response.render("home", { streak, recentPractice, practices });
-});
-
-app.get("/:year/:month", async function (request, response) {
-  const streak = await getStreak();
-  const practices = await getMonth(request.params.year, request.params.month);
-  const recentPractice = await getRecent();
-  response.render("home", { streak, recentPractice, practices });
-});
-
-app.post("/:year/:month/:day", async function (request, response) {
-  const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
-  let sql;
-  let sqlParameters;
-
-  if (request.body.alreadyLogged === "true") {
-    sqlParameters = [1, dateString, request.body.note];
-    sql = `
-    UPDATE practice_records
-    SET
-      note = ($3)
-    WHERE
-      student = ($1) AND
-      practice_date = ($2);
-    `;
-  } else {
-    let practiced = request.  body.practiced || false;
-    sqlParameters = [1, dateString, request.body.note, practiced];
-
-    sql = `
-    INSERT INTO practice_records
-      (student, practice_date, note, has_practiced)
-    VALUES
-      (($1), ($2), ($3), ($4));      
-    `;
-  }
-
-  pool.query(sql, sqlParameters, function (error) {
-    if (error) {
-      console.log(error);
-    }
-
-    response.redirect("/");
-  });
-});
