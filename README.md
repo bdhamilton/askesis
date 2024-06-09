@@ -8,15 +8,26 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 ## Versions
 
+### v4: Reorganize and reconsider code
+
+- [ ] Serious work should happen outside of the template
+  - [ ] The recent practices should be calculated in server.js
+  - [ ] The calendar should be prepared in server.js
+- [ ] The practice form should be DRY
+- [ ] Recent practices should be properly calculated
+- [ ] Helper functions should clarify high level operation
+- [ ] All functions should be checked for correctness
+- [ ] All functions should be properly commented
+
 ### v3: Re-figure the UI
 
-- [ ] The student should be prompted to log today's practice
-- [ ] The student should be prompted to log yesterday's practice
-- [ ] The calendar should be smaller and more concise
-- [ ] The calendar should clearly mark practice sessions
-- [ ] The calendar should clearly mark notes
-- [ ] There should be an easy way to read notes
-- [ ] There should be an easy way to edit notes
+- [X] The student should be prompted to log today's practice
+- [X] The student should be prompted to log yesterday's practice
+- [X] The calendar should be smaller and more concise
+- [X] The calendar should clearly mark practice sessions
+- [~] The calendar should clearly mark notes
+- [X] There should be an easy way to read notes
+- [X] There should be an easy way to edit notes
 
 ### v2: More sophisticated controls
 
