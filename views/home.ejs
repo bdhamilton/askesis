@@ -94,16 +94,9 @@
 
     let recentPractices = `<strong>${greekNumbers[streak]}</strong> τῶν ἑπτὰ παρελθουσῶν ἡμερῶν ἤσκηκας.`;
     %>
-    <div class="stats">
-      <div class="numbers">
-        <h3>ὑπομήνατα</h3>
-        <p class="displayStreak"><%- recentPractices %></p>
-        <div class="calendar-viewNote">
-          <h3>ὑπόμηνα</h3>
-        </div>
-      </div>
-  
-  
+    <div class="displayRecords">
+      <p class="notes-pastWeek"><%- recentPractices %></p>
+
       <%
       // [1] Get the date objects we'll need.
   
@@ -219,8 +212,10 @@
             // Add a note marker if necessary.
             let note;
             let noteData;
+            let dayNote;
             if (calendar[i].note) {
               note = `<img src="/img/note.svg" width="15" alt="[Practice note]" title="${calendar[i].note}">`;
+              dayNote = ` title="${calendar[i].note}"`;
               // noteData = ` data-has-note='true'`;
             }
             // Add data about whether this date was logged or generated
@@ -237,11 +232,14 @@
             }
             // And print a list item.
           %>
-            <li class="calendar-day" data-date="<%= calendar[i].fullDate %>"<%- practicedData %><%- loggedData %><%- noteData %><%- thisMonthData %><%- editableData; %>><%- note %><%= calendar[i].day %></li>
+            <li class="calendar-day" data-date="<%= calendar[i].fullDate %>"<%- practicedData %><%- loggedData %><%- noteData %><%- thisMonthData %><%- editableData; %><%- dayNote %>><%- note %><%= calendar[i].day %></li>
           <% } %>
         </ol>
+      </div><!-- end .calendar -->
+
+      <div class="practiceNote">
       </div>
-    </div>
+    </div><!-- end .stats -->
   </main>
 </body>
 </html>
