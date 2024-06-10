@@ -61,15 +61,15 @@ CREATE TABLE IF NOT EXISTS
 app.get("/", async function(request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
   const recentPractice = await getRecent();
-  const practices = await getMonth();
-  response.render("home", { countFromPastSevenDays, recentPractice, practices });
+  const calendar = await getCalendar();
+  response.render("home", { countFromPastSevenDays, recentPractice, calendar });
 });
 
 app.get("/:year/:month", async function (request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
   const recentPractice = await getRecent();
-  const practices = await getMonth(request.params.year, request.params.month);
-  response.render("home", { countFromPastSevenDays, recentPractice, practices });
+  const calendar = await getCalendar(request.params.year, request.params.month);
+  response.render("home", { countFromPastSevenDays, recentPractice, calendar });
 });
 
 app.post("/:year/:month/:day", async function (request, response) {
@@ -107,6 +107,112 @@ app.post("/:year/:month/:day", async function (request, response) {
     response.redirect("/");
   });
 });
+
+/**
+ * Build a calendar with all practice records from
+ * a given month.
+ * @param {integer=} year Defaults to current year
+ * @param {integer=} month Defaults to current month
+ * @returns {Object} .monthTitle, .days, .lastMonthUrl, .nextMonthUrl
+ */
+async function getCalendar(year, month) {
+  // [1] Construct the date information we'll need.
+
+  // Today, set to midnight (so we can check past or future)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  // The month we need to display
+  year = year || today.getFullYear();
+  month = month || today.getMonth() + 1;
+  const monthToDisplay = new Date(year, month - 1, 1);
+  const monthTitle = monthToDisplay.toLocaleString('default', { month: 'long', year: 'numeric' });
+
+  // URLs for last month and next month
+  const lastMonth = new Date(monthToDisplay);
+  lastMonth.setMonth(monthToDisplay.getMonth() - 1);
+  const lastMonthParts = formatDate(lastMonth).split("-");
+  const lastMonthUrl = formatDateStringAsUrl(`${lastMonthParts[0]}-${lastMonthParts[1]}`);
+
+  const nextMonth = new Date(monthToDisplay);
+  nextMonth.setMonth(monthToDisplay.getMonth() + 1);
+  const nextMonthParts = formatDate(nextMonth).split("-");
+  const nextMonthUrl = formatDateStringAsUrl(`${nextMonthParts[0]}-${nextMonthParts[1]}`);
+
+  // The first day we'll need to include in the calendar
+  const nextDay = new Date(monthToDisplay);
+  nextDay.setDate(monthToDisplay.getDate() - monthToDisplay.getDay());
+
+  // [2] Get records from database and cue up the first record.
+  const records = await getMonth(year, month);
+  let nextRecordIndex = 0;
+  let nextRecord = records[nextRecordIndex];
+
+  // [3] Find how many total days the calendar will include,
+  // including trailing and leading days of last and next month.
+  
+  // Get the length of this month by asking for the 0th
+  // date of _next_ month. 
+  let calendarLength = new Date(year, month, 0).getDate();
+
+  // Add the trailing days of the previous month by 
+  // adding the day index of the first day of the month.
+  calendarLength = monthToDisplay.getDay() + calendarLength;
+
+  // Then round up to the next multiple of seven to add
+  // the leading days of the following month.
+  calendarLength = Math.ceil(calendarLength / 7) * 7;
+
+  // [4] Build a calendar array
+  const days = [];
+
+  for (let i = 0; i < calendarLength; i++) {
+    // Get next day in ISO format
+    const nextDayString = formatDate(nextDay);
+
+    // Initialize an object with this day's information.
+    const calendarDay = {
+      fullDate: nextDayString,
+      day: nextDay.getDate(),
+      url: formatDateStringAsUrl(nextDayString)
+    };
+
+    // If we're in the month we want to display, mark it.
+    if (nextDay.getMonth() === monthToDisplay.getMonth()) {
+      calendarDay.thisMonth = true;
+    }
+
+    // If this day is in the past, mark it as editable.
+    if (nextDay < today) {
+      calendarDay.editable = true;
+    }
+
+    // If the student logged that day, use the logged info.
+    // TODO: is there a better way of handling the situation where
+    // the next record is undefined?
+    if (nextRecord && nextRecord.date === nextDayString) {
+      calendarDay.logged = true;
+      calendarDay.practiced = nextRecord.practiced;
+      calendarDay.note = nextRecord.note;
+
+      // And move to the next database record
+      nextRecordIndex++;
+      nextRecord = records[nextRecordIndex];
+
+    // Otherwise, assume the student did not practice.
+    } else {
+      calendarDay.logged = false;
+      calendarDay.practiced = false;
+    }
+
+    // Add the day to the calendar and increment the day
+    days.push(calendarDay);
+    nextDay.setDate(nextDay.getDate() + 1);
+  }
+
+  // [5] Return the calendar.
+  return { monthTitle, days, lastMonthUrl, nextMonthUrl };
+}
 
 /**
  * Query the database for the number of times the student
@@ -183,10 +289,6 @@ async function getStreak() {
  * @returns {array} Array of objects, one for each day of the month
  */
 async function getMonth(year, month) {
-  const today = new Date();
-  const queryYear = year || today.getFullYear();
-  const queryMonth = month || today.getMonth() + 1;
-
   const sql = `
     SELECT 
       TO_CHAR(practice_date, 'YYYY-MM-DD') AS date,
@@ -199,11 +301,13 @@ async function getMonth(year, month) {
       EXTRACT(MONTH FROM practice_date) = ($3)
     ORDER BY practice_date
     ;`;
-    const sqlParameters = [1, queryYear, queryMonth];
+    const sqlParameters = [1, year, month];
 
     const records = await pool.query(sql, sqlParameters);
 
-    return { year: queryYear, month: queryMonth, records: records.rows };
+    // We want to return an array even if there are no records,
+    // but containing nothing.
+    return records.length === 0 ? [null] : records.rows;
 }
 
 /**
