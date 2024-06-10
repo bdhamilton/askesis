@@ -286,14 +286,10 @@ CALENDAR
   background-color: hsl(50deg, 60%, 78%);
 }
 
-.calendar-day[data-this-month="false"] {
+.calendar-day:not([data-this-month="true"]) {
   visibility: hidden;
 }
 
-.calendar-day:has(> img)::after {
+.calendar-day[title]::after {
   content: "*";
-}
-
-.calendar-day img {
-  display: none;
 }
