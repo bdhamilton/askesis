@@ -12,23 +12,28 @@
     <h1>Η ΑΣΚΗΣΙΣ</h1>
     <p><q>πλέονες ἐξ ἀσκήσιος ἀγαθοί γίνονται ἤ ἀπὸ φύσιος.</q> <span>—Δημόκριτος</span></p>
 
-    <h2>χαῖρε!</h2>
+    <h2>χαῖρε, Brian!</h2>
   </header>
 
   <main>
     <%
-    // Only display the form if nothing has been logged yet for today.
-    if (recentPractice.today.logged === false) {
-      // Build a URL for today's date
-      const today = new Date();
-      const year = today.getFullYear();
-      const month = (today.getMonth() + 1).toString().padStart(2, "0");
-      const day = today.getDate().toString().padStart(2, "0");
-      const postURL = `/${year}/${month}/${day}`;
+    // Only display the form if nothing has been logged yet for today or yesterday
+    if (recentPractice.today.isLogged === false || recentPractice.yesterday.isLogged === false) {
+      let postUrl;
+      let formHeader;
+
+      // If today hasn't been logged, populate the form with that info.
+      if (recentPractice.today.isLogged === false) {
+        postUrl = recentPractice.today.url;
+        formHeader = 'ἤσκησας σήμερον;';
+      } else {
+        postUrl = recentPractice.yesterday.url;
+        formHeader = 'χθὲς ἤσκησας;';
+      }
     %>
-    <form action="<%= postURL %>" method="POST" class="recordPractice">
+    <form action="<%= postUrl %>" method="POST" class="recordPractice">
   
-      <h3 class="recordPractice-header">ἤσκησας σήμερον;</h3>
+      <h3 class="recordPractice-header"><%= formHeader %></h3>
 
       <div class="recordPractice-answers">
         <label class="recordPractice-answers-yes">
@@ -49,43 +54,13 @@
 
       <button type="submit" class="recordPractice-submit">καταπέμπειν</button>
     </form>
-    <% 
-    } else if (recentPractice.yesterday.logged === false) {
-      // Build a URL for yesterday's date
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const year = yesterday.getFullYear();
-      const month = (yesterday.getMonth() + 1).toString().padStart(2, "0");
-      const day = yesterday.getDate().toString().padStart(2, "0");
-      const postURL = `/${year}/${month}/${day}`;
-    %>
-    <form action="<%= postURL %>" method="POST" class="recordPractice">
-  
-      <h3 class="recordPractice-header">χθὲς ἤσκησας;</h3>
-      <div class="recordPractice-answerYes">
-        <input type="radio" name="practiced" id="practiced-true" value="true">
-        <label for="practiced-true"><strong>Ναί</strong>, ἤσκησα!</label>
-      </div>
+    <% } %>
 
-      <div class="recordPractice-answerNo">
-        <input type="radio" name="practiced" id="practiced-false" value="false">
-        <label for="practiced-false"><strong>Οὐχί</strong>, χθές οὐκ ἤσκησα.</label>
-      </div>
-
-      <div class="recordPractice-addNote">
-        <label for="note">Τὶ ἐποίησας;</label>
-        <textarea name="note" id="note" maxlength="100"></textarea>
-      </div>
-
-      <button type="submit" class="recordPractice-submit">καταπέμπειν</button>
-    </form>
-    <% 
-    } 
-
-    const greekNumbers = ['οὐδεμία', 'μία', 'δύο', 'τρεῖς','τέσσαρες', 'πέντε', 'ἕξ', 'ἑπτὰ']
-    let pastSevenMessage = `<strong>${greekNumbers[countFromPastSevenDays]}</strong> τῶν ἑπτὰ παρελθουσῶν ἡμερῶν ἤσκηκας.`;
-    %>
     <div class="displayRecords">
+      <%
+      const greekNumbers = ['οὐδεμία', 'μία', 'δύο', 'τρεῖς','τέσσαρες', 'πέντε', 'ἕξ', 'ἑπτὰ'];
+      let pastSevenMessage = `<strong>${greekNumbers[countFromPastSevenDays]}</strong> τῶν ἑπτὰ παρελθουσῶν ἡμερῶν ἤσκηκας.`;
+      %>
       <p class="notes-pastWeek"><%- pastSevenMessage %></p>
 
       <%

@@ -60,15 +60,15 @@ CREATE TABLE IF NOT EXISTS
 // Serve main page
 app.get("/", async function(request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
-  const practices = await getMonth();
   const recentPractice = await getRecent();
+  const practices = await getMonth();
   response.render("home", { countFromPastSevenDays, recentPractice, practices });
 });
 
 app.get("/:year/:month", async function (request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
-  const practices = await getMonth(request.params.year, request.params.month);
   const recentPractice = await getRecent();
+  const practices = await getMonth(request.params.year, request.params.month);
   response.render("home", { countFromPastSevenDays, recentPractice, practices });
 });
 
@@ -214,7 +214,7 @@ async function getRecent() {
   // Get practice records from yesterday and today
   const sql = `
   SELECT 
-    practice_date,
+    to_char(practice_date, 'YYYY-MM-DD') as date,
     has_practiced, 
     note
   FROM practice_records
@@ -227,31 +227,61 @@ async function getRecent() {
   `;
   const records = await pool.query(sql);
 
+  // Get date strings for today and yesterday
+  // and get them into YYYY-MM-DD format
+  const todaysDate = formatDate(new Date());
+  let yesterdaysDate = new Date(todaysDate + "T12:00:00");
+  yesterdaysDate.setDate(yesterdaysDate.getDate() - 1);
+  yesterdaysDate = formatDate(yesterdaysDate);
+
   // Assume the student has _not_ logged either day.
-  const today = { logged: false };
-  const yesterday = { logged: false };
+  const today = { 
+    url: formatDateStringAsUrl(todaysDate),
+    isLogged: false,
+  };
+  const yesterday = { 
+    url: formatDateStringAsUrl(yesterdaysDate),
+    isLogged: false,
+  };
 
   // But then check to see if they have.
   for (let i = 0; i < records.rows.length; i++) {
-    const recordDate = records.rows[i].practice_date;
-
-    // Get date objects to check against for today and yesterday.
-    const todayDate = new Date();
-    todayDate.setHours(0, 0, 0, 0);
-    const yesterdayDate = new Date(todayDate)
-    yesterdayDate.setDate(todayDate.getDate() - 1);
-
     // For whatever date we find, update the information.
-    if (recordDate.toString() === todayDate.toString()) {
-      today.logged = true;
-      today.has_practiced = records.rows[i].has_practiced;
-      today.note = records.rows[i].note;
-    } else if (recordDate.toString() === yesterdayDate.toString()) {
-      yesterday.logged = true;
-      yesterday.has_practiced = records.rows[i].has_practiced;
-      yesterday.note = records.rows[i].note;
+    if (records.rows[i].date === todaysDate) {
+      today.isLogged = true;
+    } else if (records.rows[i].date === yesterdaysDate) {
+      yesterday.isLogged = true;
     }
   }
 
   return { today, yesterday };
+}
+
+/**
+ * Format a date object in ISO style
+ * @param {Object} date The date to be formatted
+ * @return {string} e.g., '2024-06-09'
+ */
+function formatDate(date) {
+  const year = date.getFullYear();
+  const month = (date.getMonth() + 1).toString().padStart(2, "0");
+  const day = date.getDate().toString().padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+/**
+ * Format a date string in ISO format to a URL.
+ * Can handle YYYY, YYYY-MM, or YYYY-MM-DD.
+ * @param {string} date e.g., '2024-06-09'
+ * @return {string} e.g., '/2024/06/09'
+ */
+function formatDateStringAsUrl(date) {
+  const dateParts = date.split("-");
+  let dateUrl = '';
+
+  for (let i = 0; i < dateParts.length; i++) {
+    dateUrl += `/${dateParts[i]}`;
+  }
+
+  return dateUrl;
 }
