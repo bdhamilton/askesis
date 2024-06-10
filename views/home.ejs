@@ -5,11 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ΑΣΚΗΣΙΣ</title>
   <link rel="stylesheet" href="/c.css">
-  <script src="/editRecords.js" defer></script>
+  <!-- <script src="/editRecords.js" defer></script> -->
 </head>
 <body>
   <header>
-    <h1>Η ΑΣΚΗΣΙΣ</h1>
+    <h1><a href="/">Η ΑΣΚΗΣΙΣ</a></h1>
     <p><q>πλέονες ἐξ ἀσκήσιος ἀγαθοί γίνονται ἤ ἀπὸ φύσιος.</q> <span>—Δημόκριτος</span></p>
 
     <h2>χαῖρε, Brian!</h2>
@@ -19,12 +19,12 @@
     <%
     // If the student hasn't logged a practice either
     // today or yesterday, prompt them with a form.
-    if (recentPractice.today.isLogged === false || recentPractice.yesterday.isLogged === false) {
+    if (recentPractice.today.logged === false || recentPractice.yesterday.logged === false) {
       let postUrl;
       let formHeader;
 
       // If today hasn't been logged, prompt them for today first.
-      if (recentPractice.today.isLogged === false) {
+      if (recentPractice.today.logged === false) {
         postUrl = recentPractice.today.url;
         formHeader = 'ἤσκησας σήμερον;';
       // If it has, prompt them for yesterday.
@@ -107,8 +107,19 @@
         </ol>
       </div><!-- end .calendar -->
 
+      <% if (typeof todaysRecord === "object") {  %>
       <div class="practiceNote">
+          <form method="post" class="practiceNote-form">
+            <h3 class="practiceNote-header"><label for="note"><%= todaysRecord.longDate %></label></h3>
+
+            <input type="hidden" name="alreadyLogged" value="<%= todaysRecord.logged %>">
+
+            <textarea name="note" id="note" class="practiceNote-input" placeholder="Add a practice note." required><%= todaysRecord.note %></textarea>
+
+            <button type="submit">μεταγράφειν</button>
+          </form>
       </div>
+      <% } %>
     </div><!-- end .stats -->
   </main>
 </body>

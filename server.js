@@ -72,6 +72,14 @@ app.get("/:year/:month", async function (request, response) {
   response.render("home", { countFromPastSevenDays, recentPractice, calendar });
 });
 
+app.get("/:year/:month/:day", async function (request, response) {
+  const countFromPastSevenDays = await getCountFromPastSevenDays();
+  const recentPractice = await getRecent();
+  const calendar = await getCalendar(request.params.year, request.params.month);
+  const todaysRecord = await getDay(request.params.year, request.params.month, request.params.day) || { logged: false };
+  response.render("home", { countFromPastSevenDays, recentPractice, calendar, todaysRecord });
+});
+
 app.post("/:year/:month/:day", async function (request, response) {
   const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
   let sql;
@@ -88,7 +96,7 @@ app.post("/:year/:month/:day", async function (request, response) {
       practice_date = ($2);
     `;
   } else {
-    let practiced = request.  body.practiced || false;
+    let practiced = request.body.practiced || false;
     sqlParameters = [1, dateString, request.body.note, practiced];
 
     sql = `
@@ -104,7 +112,7 @@ app.post("/:year/:month/:day", async function (request, response) {
       console.log(error);
     }
 
-    response.redirect("/");
+    response.redirect(formatDateStringAsUrl(dateString));
   });
 });
 
@@ -301,13 +309,56 @@ async function getMonth(year, month) {
       EXTRACT(MONTH FROM practice_date) = ($3)
     ORDER BY practice_date
     ;`;
-    const sqlParameters = [1, year, month];
+  const sqlParameters = [1, year, month];
 
-    const records = await pool.query(sql, sqlParameters);
+  const records = await pool.query(sql, sqlParameters);
 
-    // We want to return an array even if there are no records,
-    // but containing nothing.
-    return records.length === 0 ? [null] : records.rows;
+  // We want to return an array even if there are no records,
+  // but containing nothing.
+  return records.length === 0 ? [null] : records.rows;
+}
+
+/**
+ * Query the database for records for a specific day.
+ * @param {integer} year 
+ * @param {integer} month 
+ * @param {integer} day 
+ * @returns {Object}
+ */
+async function getDay(year, month, day) {
+  // Format the date
+  const date = new Date(year, month - 1, day);
+  const dateString = formatDate(date);
+  const longDate = date.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' });
+
+  // Query the database
+  const sql = `
+    SELECT 
+      TO_CHAR(practice_date, 'YYYY-MM-DD') AS date,
+      has_practiced AS practiced,
+      note
+    FROM practice_records
+    WHERE
+      student = ($1) AND
+      practice_date = ($2)
+    ORDER BY practice_date
+    `;
+  const sqlParameters = [1,dateString];
+  const records = await pool.query(sql, sqlParameters);
+
+
+  // Construct the object
+  const todaysRecord = { date, longDate };
+
+  if (records.rows.length === 0) {
+    todaysRecord.logged = false;
+  } else {
+    todaysRecord.logged = true;
+    todaysRecord.practiced = records.rows[0].practiced;
+    todaysRecord.note = note = records.rows[0].note;
+  }
+
+  return todaysRecord;
 }
 
 /**
@@ -341,20 +392,20 @@ async function getRecent() {
   // Assume the student has _not_ logged either day.
   const today = { 
     url: formatDateStringAsUrl(todaysDate),
-    isLogged: false,
+    logged: false,
   };
   const yesterday = { 
     url: formatDateStringAsUrl(yesterdaysDate),
-    isLogged: false,
+    logged: false,
   };
 
   // But then check to see if they have.
   for (let i = 0; i < records.rows.length; i++) {
     // For whatever date we find, update the information.
     if (records.rows[i].date === todaysDate) {
-      today.isLogged = true;
+      today.logged = true;
     } else if (records.rows[i].date === yesterdaysDate) {
-      yesterday.isLogged = true;
+      yesterday.logged = true;
     }
   }
 
@@ -363,7 +414,7 @@ async function getRecent() {
 
 /**
  * Format a date object in ISO style
- * @param {Object} date The date to be formatted
+ * @param {Object} date The date to be formatted in JS date format
  * @return {string} e.g., '2024-06-09'
  */
 function formatDate(date) {
