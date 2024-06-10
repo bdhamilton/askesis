@@ -1,6 +1,12 @@
 # Journal
 
-## Juny 6, 2024
+## June 10, 2024
+
+I've been working but not journaling (as is my wont). I'm working on cleaning up the code before I add any more functionality. (My next step will either be to add authentication or to add a teacher view.) The next step in the cleanup is to get the calendar creation code out of my template and back into server.js.
+
+Right now, the `getMonth` function just returns the `year`, `month`, and query results from a query that grabs all the practice records for a given student for a given month. Those records are handed diretly to the template, and the template does all the handling. I'd like instead to be able to hand the template a fully-processed calendar object. Only formatting should be handled in the template.
+
+## June 6, 2024
 
 ## 9pm
 
