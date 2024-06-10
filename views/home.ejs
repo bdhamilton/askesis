@@ -102,7 +102,7 @@
 
             const attributeString = dayAttributes.join(" ");
           %>
-            <li class="calendar-day" <%- attributeString %>><%= thisDay.day %></li>
+            <li class="calendar-day" <%- attributeString %>><a href="<%= thisDay.url %>" class="calendar-day-link"><%= thisDay.day %></a></li>
           <% } %>
         </ol>
       </div><!-- end .calendar -->
