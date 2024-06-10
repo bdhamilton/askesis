@@ -62,14 +62,14 @@ app.get("/", async function(request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
   const recentPractice = await getRecent();
   const calendar = await getCalendar();
-  response.render("home", { countFromPastSevenDays, recentPractice, calendar });
+  response.render("student", { countFromPastSevenDays, recentPractice, calendar });
 });
 
 app.get("/:year/:month", async function (request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
   const recentPractice = await getRecent();
   const calendar = await getCalendar(request.params.year, request.params.month);
-  response.render("home", { countFromPastSevenDays, recentPractice, calendar });
+  response.render("student", { countFromPastSevenDays, recentPractice, calendar });
 });
 
 app.get("/:year/:month/:day", async function (request, response) {
@@ -77,7 +77,7 @@ app.get("/:year/:month/:day", async function (request, response) {
   const recentPractice = await getRecent();
   const calendar = await getCalendar(request.params.year, request.params.month);
   const todaysRecord = await getDay(request.params.year, request.params.month, request.params.day) || { logged: false };
-  response.render("home", { countFromPastSevenDays, recentPractice, calendar, todaysRecord });
+  response.render("student", { countFromPastSevenDays, recentPractice, calendar, todaysRecord });
 });
 
 app.post("/:year/:month/:day", async function (request, response) {
