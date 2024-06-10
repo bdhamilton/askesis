@@ -2,13 +2,24 @@
 
 ## June 10, 2024
 
+### 4:30pm
+
+I slightly refactored the calendar building code and moved it to server.js. I also changed the way that the update note form was working: instead of generating them
+on the fly when a student clicked a date on the calendar, I actually gave its each own page. It feels good to get this working without any client-side Javascript at all, even if later I add some as a progressive enhancement.
+
+I also did some cleanup in the main folder.
+
+One note: right now, students can still update notes on future dates, which will break everything. I need to keep that from happening---probably by refusing to offer the form in the first place, but maybe also by blocking it on the post router.
+
+### 9am
+
 I've been working but not journaling (as is my wont). I'm working on cleaning up the code before I add any more functionality. (My next step will either be to add authentication or to add a teacher view.) The next step in the cleanup is to get the calendar creation code out of my template and back into server.js.
 
 Right now, the `getMonth` function just returns the `year`, `month`, and query results from a query that grabs all the practice records for a given student for a given month. Those records are handed diretly to the template, and the template does all the handling. I'd like instead to be able to hand the template a fully-processed calendar object. Only formatting should be handled in the template.
 
 ## June 6, 2024
 
-## 9pm
+### 9pm
 
 I've been fiddling with lots of little things today. The app is slightly further along, but I hate the way I've been handling this process. Things feel wildly disorganized, and the code is too unwieldy for me even to be able to tell whether it's very efficient. I really need to learn how to better atomize and organize as I go.
 
