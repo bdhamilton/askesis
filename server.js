@@ -55,6 +55,14 @@ CREATE TABLE IF NOT EXISTS
 //   );
 // `);
 
+/**
+ * TODO: Is there a better way of handling this get routes,
+ * given that they all do almost the exact thing?
+ * 
+ * TODO: Is there a better way to name these variables? They
+ * don't feel internally consistent.
+ */
+
 // Serve main page
 app.get("/", async function(request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
@@ -79,11 +87,14 @@ app.get("/:year/:month/:day", async function (request, response) {
 });
 
 app.post("/:year/:month/:day", async function (request, response) {
+  // Build a date string from the URL
   const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
+
   let sql;
   let sqlParameters;
 
-  if (request.body.alreadyLogged === "true") {
+  // If the record has already been logged, we're updating the note.
+  if (request.body.logged === "true") {
     sqlParameters = [1, dateString, request.body.note];
     sql = `
     UPDATE practice_records
@@ -93,7 +104,11 @@ app.post("/:year/:month/:day", async function (request, response) {
       student = ($1) AND
       practice_date = ($2);
     `;
+
+  // If the record hasn't been logged, we're making a new entry
   } else {
+    // If the student is adding a note to an earlier practice session
+    // that they didn't log, mark that they didn't practice.
     let practiced = request.body.practiced || false;
     sqlParameters = [1, dateString, request.body.note, practiced];
 
@@ -110,6 +125,7 @@ app.post("/:year/:month/:day", async function (request, response) {
       console.log(error);
     }
 
+    // Send the student to the date they just updated.
     response.redirect(formatDateStringAsUrl(dateString));
   });
 });
