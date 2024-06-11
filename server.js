@@ -27,8 +27,7 @@ CREATE TABLE IF NOT EXISTS
     student_id SERIAL PRIMARY KEY,
     first_name TEXT,
     last_name TEXT,
-    email TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    email TEXT
   );
 `);
 
@@ -40,8 +39,7 @@ CREATE TABLE IF NOT EXISTS
       REFERENCES students (student_id),
     practice_date DATE DEFAULT CURRENT_DATE,
     has_practiced BOOLEAN,
-    note TEXT,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    note TEXT
   );
 `);
 
