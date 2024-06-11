@@ -1,11 +1,18 @@
 # Journal
 
+## June 11, 2024
+
+### 8:30am
+
+Okay, I've finished a thorough pass through all of the code to clean it, simplify it, and comment it up. There are a few things I'm not in love with (e.g., the repetition of the same data functions in all of the get routes, the variables names for that data), but I think it's reasonably good. I also did take care of the no-updating-future-dates problem by adding some logic in the template itself. It only writes a form if the date is in the past.
+
+What's next? I could either add a teacher view, or I could add authentication. There's nothing very tricky in the teacher view---it'll just mean writing a new template and a new data-getter---but I've never done the authentication before. I should try to implement that before I meet with Gordon and Lily tomorrow, in case I run into something I have questions about.
+
 ## June 10, 2024
 
 ### 4:30pm
 
-I slightly refactored the calendar building code and moved it to server.js. I also changed the way that the update note form was working: instead of generating them
-on the fly when a student clicked a date on the calendar, I actually gave its each own page. It feels good to get this working without any client-side Javascript at all, even if later I add some as a progressive enhancement.
+I slightly refactored the calendar building code and moved it to server.js. I also changed the way that the update note form was working: instead of generating them on the fly when a student clicked a date on the calendar, I actually gave its each own page. It feels good to get this working without any client-side Javascript at all, even if later I add some as a progressive enhancement.
 
 I also did some cleanup in the main folder.
 

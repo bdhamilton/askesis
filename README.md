@@ -8,6 +8,14 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 ## Versions
 
+### v5: Add user registration and authentication
+
+- [ ] Student should have to log in to see records
+- [ ] Student should be greeted by name
+- [ ] Student should see their own records
+- [ ] Student should be able to log out
+- [ ] New students should be able to register
+
 ### v4: Reorganize and reconsider code
 
 - [X] Serious work should happen outside of the template
@@ -15,9 +23,9 @@ Students can mark whether they practiced and add practice notes. Teacher can see
   - [X] The calendar should be prepared in server.js
 - [X] The practice form should be DRY
 - [X] Recent practices should be properly calculated
-- [ ] Helper functions should clarify high level operation
-- [ ] All functions should be checked for correctness
-- [ ] All functions should be properly commented
+- [X] Helper functions should clarify high level operation
+- [X] All functions should be checked for correctness
+- [X] All functions should be properly commented
 - [X] Rewrite calendar to go to distinct day pages?
 
 ### v3: Re-figure the UI
