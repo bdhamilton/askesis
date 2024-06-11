@@ -243,7 +243,7 @@ CALENDAR
 
 .calendar {
   font-size: .8rem;
-  margin: 1.3rem auto;
+  margin: 1.3rem 0;
   max-width: 17.5rem; /* 7 x 2.75rem; */
 }
 
