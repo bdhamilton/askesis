@@ -182,11 +182,11 @@ DISPLAY RECORDS
   display: flex;
   flex-direction: column;
   justify-content: center;
+  border-left: 1px solid #eee; 
+  padding-left: 1em;
 }
 
 .practiceNote-form {
-  border-left: 1px solid #eee; 
-  padding-left: 1em;
   display: flex;
   flex-direction: column;
   justify-content: center;
