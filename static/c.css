@@ -165,21 +165,25 @@ DISPLAY RECORDS
 **/
 
 .displayRecords {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 1rem;
   margin-top: 1rem;
   padding-top: 1rem;
   border-top: 1px solid #eee;
 }
 
+.container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .practiceNote {
-  flex: 2;
-  border-left: 1px solid hsl(50deg, 60%, 78%);
-  padding-left: 1rem;
+  flex: 1;
+  min-width: 200px;
 }
 
 .practiceNote-form {
+  border-left: 1px solid #eee; 
+  padding-left: 1em;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -193,7 +197,6 @@ DISPLAY RECORDS
   color: #666;
   padding: 0;
   margin: 0 0 .2rem;
-  line-height: 1;
 }
 
 .practiceNote-input {
@@ -201,7 +204,7 @@ DISPLAY RECORDS
   border: 0;
   display: block;
   font-size: .9rem;
-  height: 4rem;
+  height: 5rem;
   outline-color: hsl(50deg, 60%, 35%);
   margin-left: -.3rem;
   padding: .3rem;
@@ -209,7 +212,7 @@ DISPLAY RECORDS
   width: 100%;
 }
 
-.practiceNote-textarea::placeholder {
+.practiceNote-input::placeholder {
   font-size: .8rem;
 }
 
@@ -239,10 +242,9 @@ CALENDAR
 **/
 
 .calendar {
-  flex: 3;
   font-size: .8rem;
-  min-width: 14rem;
-  max-width: 14rem;
+  margin: 1.3rem auto;
+  max-width: 17.5rem; /* 7 x 2.75rem; */
 }
 
 .calendar-heading {
@@ -260,9 +262,10 @@ CALENDAR
 
 .calendar-list {
   display: grid;
-  grid-template-columns: repeat(7, minmax(0, 1fr));
+  grid-template-columns: repeat(7, minmax(0, 2.5rem));
   list-style: none;
   padding: 0;
+  justify-items: center;
 }
 
 .calendar-day:not([data-this-month="true"]) {
@@ -272,15 +275,17 @@ CALENDAR
 .calendar-day-link {
   align-items: center;
   border: 1px solid hsl(50deg, 60%, 78%);
-  border-radius: calc(2rem / 2);
+  border-radius: calc(13vw / 2);
   color: inherit;
   display: flex;
   font-size: .6rem;
-  height: 2rem;
   justify-content: center;
-  line-height: 1;
   text-decoration: none;
-  width: 2rem;
+  
+  height: 13vw;
+  width: 13vw;
+  max-height: 2.5rem;
+  max-width: 2.5rem;
 }
 
 .calendar-day[data-editable="true"] 

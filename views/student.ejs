@@ -65,61 +65,52 @@
       %>
       <p class="notes-pastWeek"><%- pastSevenMessage %></p>
     
-      <div class="calendar" lang="en">
-        <h3 class="calendar-heading">
-          <a href="<%= calendar.lastMonthUrl %>" class="calendar-changeMonth">«</a>
-            <%= calendar.monthTitle %>
-          <a href="<%= calendar.nextMonthUrl %>" class="calendar-changeMonth">»</a>
-        </h3>
-        <ol class="calendar-list">
-          <%
-          // For each item in the calendar array
-          for (let i = 0; i < calendar.days.length; i++) {
-            const thisDay = calendar.days[i];
-
-            const dayAttributes = [`data-date="${thisDay.fullDate}"`];
-
-            if (thisDay.logged) {
-              dayAttributes.push('data-logged="true"');
-            }
-
-            if (thisDay.editable) {
-              dayAttributes.push('data-editable="true"');
-            }
-
-            if (thisDay.practiced) {
-              dayAttributes.push('data-practiced="true"');
-            }
-
-            if (thisDay.thisMonth) {
-              dayAttributes.push('data-this-month="true"');
-            }
-
-            if (thisDay.note) {
-              dayAttributes.push(`title="${thisDay.note}"`);
-            }
-
-            const attributeString = dayAttributes.join(" ");
-          %>
-            <li class="calendar-day" <%- attributeString %>><a href="<%= thisDay.url %>" class="calendar-day-link"><%= thisDay.day %></a></li>
-          <% } %>
-        </ol>
-      </div><!-- end .calendar -->
-
-      <% if (typeof todaysRecord === "object") {  %>
-      <div class="practiceNote">
-          <form method="post" class="practiceNote-form">
-            <h3 class="practiceNote-header"><label for="note"><%= todaysRecord.longDate %></label></h3>
-
-            <input type="hidden" name="alreadyLogged" value="<%= todaysRecord.logged %>">
-
-            <textarea name="note" id="note" class="practiceNote-input" placeholder="Add a practice note." required><%= todaysRecord.note %></textarea>
-
-            <button type="submit">μεταγράφειν</button>
-          </form>
+      <div class="container">
+        <div class="calendar" lang="en">
+          <h3 class="calendar-heading">
+            <a href="<%= calendar.lastMonthUrl %>" class="calendar-changeMonth">«</a>
+              <%= calendar.monthTitle %>
+            <a href="<%= calendar.nextMonthUrl %>" class="calendar-changeMonth">»</a>
+          </h3>
+          <ol class="calendar-list">
+            <%
+            // For each item in the calendar array
+            for (let i = 0; i < calendar.days.length; i++) {
+              const thisDay = calendar.days[i];
+              const dayAttributes = [`data-date="${thisDay.fullDate}"`];
+              if (thisDay.logged) {
+                dayAttributes.push('data-logged="true"');
+              }
+              if (thisDay.editable) {
+                dayAttributes.push('data-editable="true"');
+              }
+              if (thisDay.practiced) {
+                dayAttributes.push('data-practiced="true"');
+              }
+              if (thisDay.thisMonth) {
+                dayAttributes.push('data-this-month="true"');
+              }
+              if (thisDay.note) {
+                dayAttributes.push(`title="${thisDay.note}"`);
+              }
+              const attributeString = dayAttributes.join(" ");
+            %>
+              <li class="calendar-day" <%- attributeString %>><a href="<%= thisDay.url %>" class="calendar-day-link"><%= thisDay.day %></a></li>
+            <% } %>
+          </ol>
+        </div><!-- end .calendar -->
+        <% if (typeof todaysRecord === "object") {  %>
+        <div class="practiceNote">
+            <form method="post" class="practiceNote-form">
+              <h3 class="practiceNote-header"><label for="note"><%= todaysRecord.longDate %></label></h3>
+              <input type="hidden" name="alreadyLogged" value="<%= todaysRecord.logged %>">
+              <textarea name="note" id="note" class="practiceNote-input" placeholder="Add a practice note." required><%= todaysRecord.note %></textarea>
+              <button type="submit">μεταγράφειν</button>
+            </form>
+        </div>
+        <% } %>
       </div>
-      <% } %>
-    </div><!-- end .stats -->
+    </div><!-- end .displayRecords -->
   </main>
 </body>
 </html>
