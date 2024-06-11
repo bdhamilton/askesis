@@ -71,6 +71,7 @@ app.get("/", async function(request, response) {
   response.render("student", { countFromPastSevenDays, recentPractice, calendar });
 });
 
+// Serve calendar from a specific month
 app.get("/:year/:month", async function (request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
   const recentPractice = await getRecent();
@@ -78,6 +79,7 @@ app.get("/:year/:month", async function (request, response) {
   response.render("student", { countFromPastSevenDays, recentPractice, calendar });
 });
 
+// Serve calendar and note from a specific day
 app.get("/:year/:month/:day", async function (request, response) {
   const countFromPastSevenDays = await getCountFromPastSevenDays();
   const recentPractice = await getRecent();
@@ -86,6 +88,7 @@ app.get("/:year/:month/:day", async function (request, response) {
   response.render("student", { countFromPastSevenDays, recentPractice, calendar, todaysRecord });
 });
 
+// Add or update a record for a specific day
 app.post("/:year/:month/:day", async function (request, response) {
   // Build a date string from the URL
   const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
@@ -261,6 +264,7 @@ async function getCountFromPastSevenDays() {
 /**
  * Query the database for the number of days in a row
  * the student has practiced.
+ * [NB: Not currently used.]
  * @returns {number} Length of streak
  */
 async function getStreak() {
@@ -329,6 +333,9 @@ async function getMonth(year, month) {
 
   // We want to return an array even if there are no records,
   // but containing nothing.
+  /**
+   * TODO: Is returning as an array important here?
+   */
   return records.length === 0 ? [null] : records.rows;
 }
 

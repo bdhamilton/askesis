@@ -77,6 +77,8 @@
             // For each item in the calendar array
             for (let i = 0; i < calendar.days.length; i++) {
               const thisDay = calendar.days[i];
+
+              // Make a list of the attributes we'll need to attach.
               const dayAttributes = [`data-date="${thisDay.fullDate}"`];
               if (thisDay.logged) {
                 dayAttributes.push('data-logged="true"');
@@ -93,12 +95,15 @@
               if (thisDay.note) {
                 dayAttributes.push(`title="${thisDay.note}"`);
               }
+
+              // And string them together.
               const attributeString = dayAttributes.join(" ");
             %>
               <li class="calendar-day" <%- attributeString %>><a href="<%= thisDay.url %>" class="calendar-day-link"><%= thisDay.day %></a></li>
             <% } %>
           </ol>
-        </div><!-- end .calendar -->
+        </div>
+        
         <% if (typeof todaysRecord === "object") {  %>
         <div class="practiceNote">
             <form method="post" class="practiceNote-form">
@@ -113,7 +118,7 @@
         </div>
         <% } %>
       </div>
-    </div><!-- end .displayRecords -->
+    </div>
   </main>
 </body>
 </html>
