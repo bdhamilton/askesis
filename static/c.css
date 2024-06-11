@@ -67,6 +67,7 @@ HEADER
 
 header {
   line-height: 1.1;
+  max-width: 60ch;
 }
 
 header a {
@@ -319,4 +320,14 @@ CALENDAR
 .calendar-day[title] 
 .calendar-day-link::after {
   content: "*";
+}
+
+/**
+LOGOUT FORM
+**/
+
+.logoutForm {
+  float: right;
+  font-size: 0.8rem;
+  margin-top: 0.5rem;
 }

@@ -8,10 +8,14 @@
 </head>
 <body>
   <header>
+    <form action="/logout" method="post" class="logoutForm">
+      <button type="submit">Log out</button>
+    </form>
     <h1><a href="/">Η ΑΣΚΗΣΙΣ</a></h1>
     <p><q>πλέονες ἐξ ἀσκήσιος ἀγαθοί γίνονται ἤ ἀπὸ φύσιος.</q> <span>—Δημόκριτος</span></p>
 
-    <h2>χαῖρε, Brian!</h2>
+    <h2>χαῖρε, <%= student.firstName %>!</h2>
+    
   </header>
 
   <main>

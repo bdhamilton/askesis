@@ -2,6 +2,10 @@
 
 ## June 11, 2024
 
+### 4pm 
+
+Authentication almost done! One bug: when a new user registers, their name isn't passed to initial session---only their email is. If they log out and log back in, then they've got everything. I can't find where that first session is defined. I've tried (1) passing it to the `redirect` function in the post-to-register router, and (2) modifying the place in line 93 where the passport strategy is defined. I might have tried something else, too. But the passport strategy function is not getting called when a new user registered (tried to set a breakpoint and it never got triggered), so that can't be it. It could still be the `redirect` function, but I'm not sure how to properly pass an argument along. That's worth more exploration.
+
 ### 8:30am
 
 Okay, I've finished a thorough pass through all of the code to clean it, simplify it, and comment it up. There are a few things I'm not in love with (e.g., the repetition of the same data functions in all of the get routes, the variables names for that data), but I think it's reasonably good. I also did take care of the no-updating-future-dates problem by adding some logic in the template itself. It only writes a form if the date is in the past.

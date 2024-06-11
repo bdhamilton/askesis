@@ -27,7 +27,9 @@ CREATE TABLE IF NOT EXISTS
     student_id SERIAL PRIMARY KEY,
     first_name TEXT,
     last_name TEXT,
-    email TEXT
+    email TEXT UNIQUE,
+    hashed_password BYTEA,
+    salt BYTEA
   );
 `);
 
@@ -55,8 +57,73 @@ CREATE TABLE IF NOT EXISTS
 //   );
 // `);
 
+// Get authentication packages
+const session = require('express-session');
+const passport = require('passport');
+const LocalStrategy = require('passport-local');
+const crypto = require('crypto');
+
+// Set up a session
+app.use(session({
+  secret: 'bdhamilton-934-983-458', // random string used to authenticate a session
+  resave: false, // don't save session if unchanged
+  saveUninitialized: false // don't create session until something stored
+}));
+
+// Run passport.authenticate('session') on every request
+app.use(passport.authenticate('session'));
+
+// Set up a local authentication strategy
+passport.use(new LocalStrategy(function verify(email, password, callback) {
+  const sql = 'SELECT * FROM students WHERE email = ($1);';
+  const sqlParameters = [email];
+
+  // Run SQL query and provide function to call once it's done
+  pool.query(sql, sqlParameters, function(error, studentResult) {
+    // If there was an error, send it to the callback.
+    if (error) { 
+      return callback(error);
+    }
+
+    // If student doesn't exist, send it to the callback.
+    if (!studentResult || studentResult.rows.length === 0) { 
+      return callback(null, false, {message: 'Incorrect email address or password.'}); 
+    }
+
+    const student = studentResult.rows[0]; 
+
+    // Hash the supplied password then check it against database.
+    crypto.pbkdf2(password, student.salt, 310000, 32, 'sha256', function(error, hashedPassword) {
+      if (error) { 
+        return callback(error); 
+      }
+
+      // If passwords don't match, send error to callback.
+      if (!crypto.timingSafeEqual(student.hashed_password, hashedPassword)) {
+        return callback(null, false, { message: 'Incorrect email address or password.' });
+      }
+
+      // If passwords do match, send student to callback.
+      return callback(null, student);
+    });
+  });
+}));
+
+// Maintain login sessions
+passport.serializeUser(function(student, callback) {
+  // Save an object with the student's id and username
+  callback(null, { id: student.student_id, email: student.email, firstName: student.first_name });
+});
+
+passport.deserializeUser(function(student, callback) {
+  // No changes needed, we just want the user object that we defined in serializeUser's function
+  callback(null, student);
+});
+
+// 
+
 /**
- * TODO: Is there a better way of handling this get routes,
+ * TODO: Is there a better way of handling these get routes,
  * given that they all do almost the exact thing?
  * 
  * TODO: Is there a better way to name these variables? They
@@ -65,27 +132,45 @@ CREATE TABLE IF NOT EXISTS
 
 // Serve main page
 app.get("/", async function(request, response) {
-  const countFromPastSevenDays = await getCountFromPastSevenDays();
-  const recentPractice = await getRecent();
-  const calendar = await getCalendar();
-  response.render("student", { countFromPastSevenDays, recentPractice, calendar });
+  // If user is not logged in, redirect to login page.
+  if (!request.isAuthenticated()) {
+    return response.redirect('/login');
+  }
+
+  const student = request.user;
+  const countFromPastSevenDays = await getCountFromPastSevenDays(student.id);
+  const recentPractice = await getRecent(student.id);
+  const calendar = await getCalendar(student.id);
+  response.render("student", { countFromPastSevenDays, recentPractice, calendar, student });
 });
 
 // Serve calendar from a specific month
 app.get("/:year/:month", async function (request, response) {
-  const countFromPastSevenDays = await getCountFromPastSevenDays();
-  const recentPractice = await getRecent();
-  const calendar = await getCalendar(request.params.year, request.params.month);
-  response.render("student", { countFromPastSevenDays, recentPractice, calendar });
+  // If user is not logged in, redirect to login page.
+  if (!request.isAuthenticated()) {
+    return response.redirect('/login');
+  }
+  
+  const student = request.user;
+  const countFromPastSevenDays = await getCountFromPastSevenDays(student.id);
+  const recentPractice = await getRecent(student.id);
+  const calendar = await getCalendar(student.id, request.params.year, request.params.month);
+  response.render("student", { countFromPastSevenDays, recentPractice, calendar, student });
 });
 
 // Serve calendar and note from a specific day
 app.get("/:year/:month/:day", async function (request, response) {
-  const countFromPastSevenDays = await getCountFromPastSevenDays();
-  const recentPractice = await getRecent();
-  const calendar = await getCalendar(request.params.year, request.params.month);
-  const todaysRecord = await getDay(request.params.year, request.params.month, request.params.day) || { logged: false };
-  response.render("student", { countFromPastSevenDays, recentPractice, calendar, todaysRecord });
+  // If user is not logged in, redirect to login page.
+  if (!request.isAuthenticated()) {
+    return response.redirect('/login');
+  }
+  
+  const student = request.user;
+  const countFromPastSevenDays = await getCountFromPastSevenDays(student.id);
+  const recentPractice = await getRecent(student.id);
+  const calendar = await getCalendar(student.id, request.params.year, request.params.month);
+  const todaysRecord = await getDay(student.id, request.params.year, request.params.month, request.params.day) || { logged: false };
+  response.render("student", { countFromPastSevenDays, recentPractice, calendar, todaysRecord, student });
 });
 
 // Add or update a record for a specific day
@@ -104,12 +189,13 @@ app.post("/:year/:month/:day", async function (request, response) {
     return;
   }
 
+  const student = request.user;
   let sql;
   let sqlParameters;
 
   // If the record has already been logged, we're updating the note.
   if (request.body.logged === "true") {
-    sqlParameters = [1, dateString, request.body.note];
+    sqlParameters = [student.id, dateString, request.body.note];
     sql = `
     UPDATE practice_records
     SET
@@ -124,7 +210,7 @@ app.post("/:year/:month/:day", async function (request, response) {
     // If the student is adding a note to an earlier practice session
     // that they didn't log, mark that they didn't practice.
     let practiced = request.body.practiced || false;
-    sqlParameters = [1, dateString, request.body.note, practiced];
+    sqlParameters = [student.id, dateString, request.body.note, practiced];
 
     sql = `
     INSERT INTO practice_records
@@ -144,6 +230,91 @@ app.post("/:year/:month/:day", async function (request, response) {
   });
 });
 
+// Serve a login form.
+app.get('/login', function(request, response, next) {
+  // If user is already logged in, redirect them to the home page
+  if (request.isAuthenticated()) {
+    return response.redirect('/');
+  }
+
+  // Render login.ejs
+  response.render("login");
+});
+
+// Store function (returned by passport.authenticate) that we want to call for POST requests to "/login"
+const passportAuthenticateFunction = passport.authenticate('local', {
+  successReturnToOrRedirect: '/',
+  failureRedirect: '/login',
+  failureMessage: true
+});
+
+// Handle logins
+app.post('/login/password', passportAuthenticateFunction);
+
+// Handle logouts
+app.post('/logout', function(request, response) {
+  // Call the logout function stored on the request object
+  // This will remove request.user and clear login session
+  request.logout(function(error) {
+    if (error) { 
+      response.send("<h1>Logout Error</h1>");
+    } else {
+      response.redirect("/login");
+    }
+  });
+});
+
+// Serve registration form
+app.get('/register', function(request, response, next) {
+  response.render("register");
+});
+
+// Handle registrations
+app.post('/register', function(request, response, next) {
+  // Use crypto to generate new salt
+  const salt = crypto.randomBytes(16);
+
+  // Call pbkdf2 (a hash function) to hash entered password
+  crypto.pbkdf2(request.body.password, salt, 310000, 32, 'sha256', function(error, hashedPassword) {
+    if (error) { 
+      return next(error);
+    }
+
+    // Define SQL query to save new user in Users table
+    const sql = `
+    INSERT INTO students 
+      (first_name, last_name, email, hashed_password, salt)
+    VALUES 
+      (($1), ($2), ($3), ($4), ($5))
+    RETURNING student_id;
+    `;
+    const sqlParams = [request.body.firstName, request.body.lastName, request.body.email, hashedPassword, salt];
+
+    // Run sql query
+    pool.query(sql, sqlParams, function(error, result) {
+      if (error) {
+        return next(error); 
+      }
+
+      console.log(result);
+
+      // Create student object with necessary information
+      const student = {id: result.rows[0].student_id, email: request.body.email, firstName: request.body.firstName};
+
+      // Call login function (also from passport) to create new login session
+      request.login(student, function(error) {
+        if (error) {
+          return next(error); 
+        }
+
+        // Once login is done, go to home page
+        response.redirect('/');
+      });
+    });
+  });
+});
+
+
 /**
  * Build a calendar with all practice records from
  * a given month.
@@ -151,7 +322,7 @@ app.post("/:year/:month/:day", async function (request, response) {
  * @param {integer=} month Defaults to current month
  * @returns {Object} .monthTitle, .days, .lastMonthUrl, .nextMonthUrl
  */
-async function getCalendar(year, month) {
+async function getCalendar(studentId, year, month) {
   // [1] Construct the date information we'll need.
 
   // Today, set to midnight (so we can check past or future)
@@ -180,7 +351,7 @@ async function getCalendar(year, month) {
   nextDay.setDate(monthToDisplay.getDate() - monthToDisplay.getDay());
 
   // [2] Get records from database and cue up the first record.
-  const records = await getMonth(year, month);
+  const records = await getMonth(studentId, year, month);
   let nextRecordIndex = 0;
   let nextRecord = records[nextRecordIndex];
 
@@ -255,7 +426,7 @@ async function getCalendar(year, month) {
  * has practiced in the past seven days.
  * @returns {number} Number of practice sessions out of seven.
  */
-async function getCountFromPastSevenDays() {
+async function getCountFromPastSevenDays(studentId) {
   const sql = `
   SELECT 
     COUNT(*)
@@ -265,7 +436,7 @@ async function getCountFromPastSevenDays() {
     has_practiced = true AND
     practice_date BETWEEN (CURRENT_TIMESTAMP - Interval '7 days') AND CURRENT_TIMESTAMP
   ;`;
-  const sqlParameters = [1];
+  const sqlParameters = [studentId];
   const records = await pool.query(sql, sqlParameters);
 
   // Return the number of the count
@@ -278,7 +449,7 @@ async function getCountFromPastSevenDays() {
  * [NB: Not currently used.]
  * @returns {number} Length of streak
  */
-async function getStreak() {
+async function getStreak(studentId) {
   const streakSql = `
   SELECT 
     practice_date as date, 
@@ -288,7 +459,7 @@ async function getStreak() {
     student = ($1)
   ORDER BY practice_date DESC;
   `;
-  const streakParameters = [1];
+  const streakParameters = [studentId];
   const records = await pool.query(streakSql, streakParameters);
 
   // Initialize a count of their streak and a reference to today's date.
@@ -325,7 +496,7 @@ async function getStreak() {
  * @param {number} month Month for which you want records (Jan = 1)
  * @returns {array} Array of objects, one for each day of the month
  */
-async function getMonth(year, month) {
+async function getMonth(studentId, year, month) {
   const sql = `
     SELECT 
       TO_CHAR(practice_date, 'YYYY-MM-DD') AS date,
@@ -338,7 +509,7 @@ async function getMonth(year, month) {
       EXTRACT(MONTH FROM practice_date) = ($3)
     ORDER BY practice_date
     ;`;
-  const sqlParameters = [1, year, month];
+  const sqlParameters = [studentId, year, month];
 
   const records = await pool.query(sql, sqlParameters);
 
@@ -357,7 +528,7 @@ async function getMonth(year, month) {
  * @param {integer} day 
  * @returns {Object}
  */
-async function getDay(year, month, day) {
+async function getDay(studentId, year, month, day) {
   // Format the date
   const date = new Date(year, month - 1, day);
   const dateString = formatDate(date);
@@ -375,7 +546,7 @@ async function getDay(year, month, day) {
       practice_date = ($2)
     ORDER BY practice_date
     `;
-  const sqlParameters = [1,dateString];
+  const sqlParameters = [studentId, dateString];
   const records = await pool.query(sql, sqlParameters);
 
 
@@ -403,7 +574,7 @@ async function getDay(year, month, day) {
  * Query the database for practice records from yesterday and today
  * @returns {Object} Object containing `today` and `yesterday` objects
  */
-async function getRecent() {
+async function getRecent(studentId) {
   // Get practice records from yesterday and today
   const sql = `
   SELECT 
@@ -412,13 +583,14 @@ async function getRecent() {
     note
   FROM practice_records
   WHERE
-    student = 1 AND
+    student = ($1) AND
     practice_date BETWEEN 
       CURRENT_DATE - INTERVAL '1 day' AND
       CURRENT_DATE
   ORDER BY practice_date;
   `;
-  const records = await pool.query(sql);
+  const sqlParameters = [studentId];
+  const records = await pool.query(sql, sqlParameters);
 
   // Get date strings for today and yesterday
   // and get them into YYYY-MM-DD format
