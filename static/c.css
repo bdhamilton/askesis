@@ -179,6 +179,9 @@ DISPLAY RECORDS
 .practiceNote {
   flex: 1;
   min-width: 200px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .practiceNote-form {
@@ -227,6 +230,15 @@ DISPLAY RECORDS
 .practiceNote button:hover {
   color: hsl(50deg, 60%, 15%);
   cursor: pointer;
+}
+
+.practiceNote span {
+  display: block;
+  float: right;
+}
+
+.practiceNote span a {
+  color: hsl(50deg, 40%, 30%);
 }
 
 .notes-pastWeek {

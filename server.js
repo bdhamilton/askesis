@@ -93,6 +93,17 @@ app.post("/:year/:month/:day", async function (request, response) {
   // Build a date string from the URL
   const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
 
+  // If the date is in the future, ignore the request.
+  /**
+   * TODO: is there a better way to do this error handling?
+   */
+  const today = new Date();
+  const todayString = formatDate(today);
+  if (todayString < dateString) {
+    response.redirect(formatDateStringAsUrl(dateString));
+    return;
+  }
+
   let sql;
   let sqlParameters;
 
@@ -376,7 +387,13 @@ async function getDay(year, month, day) {
   } else {
     todaysRecord.logged = true;
     todaysRecord.practiced = records.rows[0].practiced;
-    todaysRecord.note = note = records.rows[0].note;
+    todaysRecord.note = records.rows[0].note;
+  }
+
+  // Check if the requested date is in the future
+  const today = new Date();
+  if (date > today) {
+    todaysRecord.future = true;
   }
 
   return todaysRecord;

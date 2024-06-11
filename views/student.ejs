@@ -104,19 +104,36 @@
           </ol>
         </div>
         
-        <% if (typeof todaysRecord === "object") {  %>
+        <% 
+        // If we're on a day page:
+        if (typeof todaysRecord === "object") {
+          // And if the date is in the past:
+          if (todaysRecord.future !== true) {
+            // Write a form letting the student update today's note.
+        %>
         <div class="practiceNote">
-            <form method="post" class="practiceNote-form">
-              <h3 class="practiceNote-header"><label for="note"><%= todaysRecord.longDate %></label></h3>
-              <input type="hidden" name="logged" value="<%= todaysRecord.logged %>">
-              <% if (todaysRecord.logged === true) { %>
-              <input type="hidden" name="practiced" value="<%= todaysRecord.practiced %>">
-              <% } %>
-              <textarea name="note" id="note" class="practiceNote-input" placeholder="Add a practice note." required><%= todaysRecord.note %></textarea>
-              <button type="submit">μεταγράφειν</button>
-            </form>
+          <form method="post" class="practiceNote-form">
+            <h3 class="practiceNote-header"><label for="note"><%= todaysRecord.longDate %></label></h3>
+            <input type="hidden" name="logged" value="<%= todaysRecord.logged %>">
+            <% if (todaysRecord.logged === true) { %>
+            <input type="hidden" name="practiced" value="<%= todaysRecord.practiced %>">
+            <% } %>
+            <textarea name="note" id="note" class="practiceNote-input" placeholder="Add a practice note." required><%= todaysRecord.note %></textarea>
+            <button type="submit">μεταγράφειν</button>
+          </form>
+      </div>
+        <%
+          // If the date record is in the future, say so.
+          } else {
+        %>
+        <div class="practiceNote">
+          <h3 class="practiceNote-header"><%= todaysRecord.longDate %></h3>
+          <p class="practiceNote-future"><q>τοὐπίσω δʼ οὐδὲν σκοπεῖ.</q> <span>—<a href="https://bmcr.brynmawr.edu/2018/2018.09.56/">Eὐριπίδης</a></span></p>
         </div>
-        <% } %>
+        <%
+          }
+        }
+        %>
       </div>
     </div>
   </main>
