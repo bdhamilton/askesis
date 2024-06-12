@@ -8,6 +8,14 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 ## Versions
 
+### v7: Add detailed teacher view
+
+- [ ] There should be routers for detailed teacher views
+  - [ ] Current
+  - [ ] Month
+  - [ ] Day
+- [ ] There should be a `teacher-detail` template that displays relevant data
+
 ### v6: Add basic teacher view
 
 - [X] There should be a special router for a teacher view.
