@@ -15,6 +15,7 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 - [X] It should list all students.
 - [X] It should display each student's record for the past week.
 - [X] It should indicate whether that record is trending up or down.
+- [X] Style the student list
 
 ### v5: Add user registration and authentication
 

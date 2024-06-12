@@ -330,3 +330,48 @@ LOGOUT FORM
   font-size: 0.8rem;
   margin-top: 0.5rem;
 }
+
+/**
+STUDENT OVERVIEW
+**/
+
+.studentOverview {
+  border: 1px solid #ccc;
+  border-width:0 1px 1px 0;  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  list-style: none;
+  margin-top: 2rem;
+  padding: 0;
+}
+
+.studentOverview-student {
+  border: 1px solid #ccc;
+  border-width: 1px 0 0 1px;
+  padding: 15px;
+}
+
+.studentOverview-link {
+  color: black;
+  text-decoration: none;
+}
+
+.studentOverview-link:hover {
+  color: hsl(50deg, 60%, 35%);
+}
+
+p[data-trend="up"]::before {
+  content: "⬆ ";
+  color: green;
+}
+
+p[data-trend="even"]::before {
+  content: "= ";
+}
+
+p[data-trend="down"]::before {
+  content: "⬇ ";
+  color: red;
+}
+
+
+

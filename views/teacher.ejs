@@ -14,9 +14,12 @@
     <h1><a href="/">Η ΑΣΚΗΣΙΣ</a></h1>   
   </header>
   <main>
-    <ul>
+    <ul class="studentOverview" lang="en">
     <% for (let i = 0; i < students.length; i++) { %>
-      <li><%= students[i].fullName %>: <%= students[i].week.count %>/7 (<%= students[i].week.trend %>)</li>
+      <li class="studentOverview-student">
+        <h3><a href="/teacher/<%= students[i].id %>" class="studentOverview-link"><%= students[i].fullName %></a></h3>
+        <p data-trend="<%= students[i].week.trend %>"><%= students[i].week.count %> of last 7 days</p>
+      </li>
     <% } %>
     </ul>
   </main>
