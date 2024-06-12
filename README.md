@@ -10,11 +10,11 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 ### v5: Add user registration and authentication
 
-- [ ] Student should have to log in to see records
-- [ ] Student should be greeted by name
-- [ ] Student should see their own records
-- [ ] Student should be able to log out
-- [ ] New students should be able to register
+- [X] Student should have to log in to see records
+- [X] Student should be greeted by name
+- [X] Student should see their own records
+- [X] Student should be able to log out
+- [X] New students should be able to register
 
 ### v4: Reorganize and reconsider code
 

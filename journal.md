@@ -1,5 +1,13 @@
 # Journal
 
+## June 12, 2024
+
+### 8am
+
+I squashed the last little authentication bug, so that's done. It turns out that user information is assigned to the session with `passport.serializeUser`, and my trouble stemmed from a difference in the way that the registration form and the standard authentication process was naming the variables being passed in.
+
+There are two more major pieces of functionality I have in mind: a teacher view and teacher notes. I'm on the fence about whether I care enough to add the teacher notes, but I definitely need the teacher view. So that's version 6.
+
 ## June 11, 2024
 
 ### 4pm 
