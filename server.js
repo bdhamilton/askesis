@@ -230,6 +230,15 @@ app.post("/:year/:month/:day", async function (request, response) {
   });
 });
 
+app.get("/teacher/", async function(request, response) {
+  // Only allow access if _I_ am logged in.
+  if (!request.isAuthenticated() || request.user.id !== 9) {
+    return response.redirect('/login');
+  }
+
+    response.render("<h1>Got it!</h1>");
+});
+
 // Serve a login form.
 app.get('/login', function(request, response, next) {
   // If user is already logged in, redirect them to the home page
