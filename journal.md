@@ -2,6 +2,24 @@
 
 ## June 12, 2024
 
+### 8:30am
+
+I need to think through how this teacher view should work.
+
+For the main page, I need a list of students that includes their (1) full name, (2) email address, (3) record for the past week, and (4) trend line. I already have a way of getting the record for the past week, so I can use that for #3. 
+
+Let me think backwards here. In the template, I want to be able to just do a `for (const student in students)` loop, and then be able to rattle off `student.fullName`, `student.weeklyRecord`, `student.trend`, and `student.email`. So within the router, I need to end up with a `students` array with all the `student` objects inside.
+
+There's a question about how much work to do in the router and how much to define in other functions. For now, I'm going to do some of the work in the router, and I can easily move it out later. So something like this:
+
+Get list of all students (id, email, fullname)
+For each student:
+  Get weekly record and add to object
+  Get trend and add to object
+Send student array along
+
+So I have two functions to write: `getStudentList` and `getTrend`. I'm not immediately sure how `getTrend` should work. Should I pass it the value of `getCountFromPastSeven` so I don't duplicate that server work? I already dislike that function, so I might just refactor it. But I'll think about that second.
+
 ### 8am
 
 I squashed the last little authentication bug, so that's done. It turns out that user information is assigned to the session with `passport.serializeUser`, and my trouble stemmed from a difference in the way that the registration form and the standard authentication process was naming the variables being passed in.

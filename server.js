@@ -236,7 +236,9 @@ app.get("/teacher/", async function(request, response) {
     return response.redirect('/login');
   }
 
-    response.render("<h1>Got it!</h1>");
+  const students = await getStudentList();
+
+  response.render("teacher", { students });
 });
 
 // Serve a login form.
@@ -631,6 +633,39 @@ async function getRecent(studentId) {
   }
 
   return { today, yesterday };
+}
+
+/**
+ * Get a list of all current students
+ * @returns {array}
+ */
+async function getStudentList() {
+  // Get all the students from the database
+  const sql = `
+  select 
+    student_id,
+    email,
+    concat_ws(' ', first_name, last_name) as full_name
+  from 
+    students
+  order by last_name;
+  `;
+  const records = await pool.query(sql);
+
+  // Build an array of all students
+  const students = [];
+  for (let i = 0; i < records.rowCount; i++) {
+    const student = {
+      id: records.rows[i].student_id,
+      fullName: records.rows[i].full_name,
+      email: records.rows[i].email
+    }
+
+    students.push(student);
+  }
+
+  // Return the array
+  return students;
 }
 
 /**
