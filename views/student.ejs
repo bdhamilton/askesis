@@ -93,6 +93,9 @@
               if (thisDay.thisMonth) {
                 dayAttributes.push('data-this-month="true"');
               }
+              if (thisDay.editable) {
+                dayAttributes.push('data-editable="true"');
+              }
               if (thisDay.note) {
                 dayAttributes.push(`title="${thisDay.note}"`);
               }
