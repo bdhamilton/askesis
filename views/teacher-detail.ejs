@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="grc">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ΑΣΚΗΣΙΣ</title>
+  <link rel="stylesheet" href="/c.css">
+</head>
+<body class="teacherView">
+  <header>
+    <form action="/logout" method="post" class="logoutForm">
+      <button type="submit">Log out</button>
+    </form>
+    <h1><a href="/">Η ΑΣΚΗΣΙΣ</a></h1>
+    <h2 class="en">Records for <%= student.fullName %></h2>
+    <p><a href="/teacher/">Back to full student list</a></p>
+  </header>
+
+  <main>
+    <div class="displayRecords">
+      <%
+      // Define URL prefix for teacher viewport
+      const teacherUrlPrefix = `/teacher/${student.id}`;
+
+      // Define message string
+      const greekNumbers = ['οὐδεμία', 'μία', 'δύο', 'τρεῖς','τέσσαρες', 'πέντε', 'ἕξ', 'ἑπτὰ'];
+      let pastSevenMessage = `<strong>${week.count}</strong> of last 7 days.`;
+      %>
+      <p class="notes-pastWeek" data-trend="<%= week.trend %>"><%- pastSevenMessage %></p>
+    
+      <div class="container">
+        <div class="calendar" lang="en">
+          <h3 class="calendar-heading">
+            <a href="<%= teacherUrlPrefix %><%= calendar.lastMonthUrl %>" class="calendar-changeMonth">«</a>
+              <%= calendar.monthTitle %>
+            <a href="<%= teacherUrlPrefix %><%= calendar.nextMonthUrl %>" class="calendar-changeMonth">»</a>
+          </h3>
+          <ol class="calendar-list">
+            <%
+            // For each item in the calendar array
+            for (let i = 0; i < calendar.days.length; i++) {
+              const thisDay = calendar.days[i];
+
+              // Make a list of the attributes we'll need to attach.
+              const dayAttributes = [`data-date="${thisDay.fullDate}"`];
+              if (thisDay.logged) {
+                dayAttributes.push('data-logged="true"');
+              }
+              if (thisDay.practiced) {
+                dayAttributes.push('data-practiced="true"');
+              }
+              if (thisDay.thisMonth) {
+                dayAttributes.push('data-this-month="true"');
+              }
+              if (thisDay.editable) {
+                dayAttributes.push('data-editable="true"');
+              }
+              if (thisDay.note) {
+                dayAttributes.push(`title="${thisDay.note}"`);
+              }
+
+              // And string them together.
+              const attributeString = dayAttributes.join(" ");
+            %>
+              <li class="calendar-day" <%- attributeString %>><a href="<%= teacherUrlPrefix %><%= thisDay.url %>" class="calendar-day-link"><%= thisDay.day %></a></li>
+            <% } %>
+          </ol>
+        </div>
+        
+        <% 
+        // If we're on a day page:
+        if (typeof todaysRecord === "object") {
+        %>
+        <div class="practiceNote">
+          <h3 class="practiceNote-header"><label for="note"><%= todaysRecord.longDate %></label></h3>
+          <p class="practiceNote-paragraph"><%= todaysRecord.note %></p>
+        </div>
+        <% } %>
+      </div>
+    </div>
+  </main>
+</body>
+</html>

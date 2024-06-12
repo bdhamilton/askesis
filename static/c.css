@@ -373,5 +373,7 @@ p[data-trend="down"]::before {
   color: red;
 }
 
-
-
+.practiceNote-paragraph {
+  font-size: 0.9rem;
+  height: 5rem;
+}

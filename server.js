@@ -141,9 +141,9 @@ passport.deserializeUser(function(student, callback) {
 // Serve main teacher page
 app.get("/teacher", async function(request, response) {
   // Only allow access if _I_ am logged in.
-  // if (!request.isAuthenticated() || request.user.id !== 9) {
-  //   return response.redirect('/login');
-  // }
+  if (!request.isAuthenticated() || request.user.id !== 9) {
+    return response.redirect('/login');
+  }
 
   // Get a list of all students
   const students = await getStudentList();
@@ -162,16 +162,41 @@ app.get("/teacher", async function(request, response) {
  * came after the month or day processors, because "teacher" in the
  * string was being read as a month year value. Best practices here?
  */
-app.get("/teacher/:student", async function(request, response) {
+app.get("/teacher/:student_id", async function(request, response) {
   // Only allow access if _I_ am logged in.
-  // if (!request.isAuthenticated() || request.user.id !== 9) {
-  //   return response.redirect('/login');
-  // }
+  if (!request.isAuthenticated() || request.user.id !== 9) {
+    return response.redirect('/login');
+  }
 
-  const calendar = getCalendar(request.params.student);
-  const week = getWeek(request.params.student);
-  const student = getStudent(request.params.student);
+  const calendar = await getCalendar(request.params.student_id);
+  const week = await getWeek(request.params.student_id);
+  const student = await getStudent(request.params.student_id);
   response.render("teacher-detail", { calendar, week, student });
+});
+
+app.get("/teacher/:student_id/:year/:month", async function(request, response) {
+  // Only allow access if _I_ am logged in.
+  if (!request.isAuthenticated() || request.user.id !== 9) {
+    return response.redirect('/login');
+  }
+
+  const calendar = await getCalendar(request.params.student_id, request.params.year, request.params.month);
+  const week = await getWeek(request.params.student_id);
+  const student = await getStudent(request.params.student_id);
+  response.render("teacher-detail", { calendar, week, student });
+});
+
+app.get("/teacher/:student_id/:year/:month/:day", async function(request, response) {
+  // Only allow access if _I_ am logged in.
+  if (!request.isAuthenticated() || request.user.id !== 9) {
+    return response.redirect('/login');
+  }
+
+  const student = await getStudent(request.params.student_id);
+  const calendar = await getCalendar(request.params.student_id, request.params.year, request.params.month);
+  const week = await getWeek(request.params.student_id);
+  const todaysRecord = await getDay(request.params.student_id, request.params.year, request.params.month, request.params.day);
+  response.render("teacher-detail", { calendar, week, student, todaysRecord });
 });
 
 // Serve main student page
