@@ -314,9 +314,8 @@ CALENDAR
 
 .calendar-day[data-practiced="true"] 
 .calendar-day-link {
-  background-color: hsl(50deg, 60%, 78%);
+  background: hsl(50deg, 60%, 78%) url(/img/practiced.svg);
 }
-
 .calendar-day[title] 
 .calendar-day-link::after {
   content: "*";
