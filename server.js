@@ -16,6 +16,12 @@ app.use(express.static(__dirname + '/static'));
 app.use(express.json());
 app.use(express.urlencoded());
 
+// Basic request logger.
+app.use(function logRequest(request, response, next) {
+  console.log(`${request.method} ${request.url}`);
+  next();
+});
+
 // Set up Postgres
 const pg = require("pg");
 const pool = new pg.Pool();
@@ -127,10 +133,48 @@ passport.deserializeUser(function(student, callback) {
  * given that they all do almost the exact thing?
  * 
  * TODO: Is there a better way to name these variables? They
- * don't feel internally consistent.
+ * don't feel internally consistent. IDEA: Have `getRecent`
+ * return an object with these properties: `today.logged`, 
+ * `yesterday.logged`, `week.count`, and `week.trend`.
  */
 
-// Serve main page
+// Serve main teacher page
+app.get("/teacher", async function(request, response) {
+  // Only allow access if _I_ am logged in.
+  // if (!request.isAuthenticated() || request.user.id !== 9) {
+  //   return response.redirect('/login');
+  // }
+
+  // Get a list of all students
+  const students = await getStudentList();
+
+  // For each student:
+  for (let i = 0; i < students.length; i++) {
+    students[i].week = await getWeek(students[i].id);
+  }
+
+  response.render("teacher", { students });
+});
+
+// Get current information about a particular student
+/**
+ * TODO: I was getting an error here when this request processor
+ * came after the month or day processors, because "teacher" in the
+ * string was being read as a month year value. Best practices here?
+ */
+app.get("/teacher/:student", async function(request, response) {
+  // Only allow access if _I_ am logged in.
+  // if (!request.isAuthenticated() || request.user.id !== 9) {
+  //   return response.redirect('/login');
+  // }
+
+  const calendar = getCalendar(request.params.student);
+  const week = getWeek(request.params.student);
+  const student = getStudent(request.params.student);
+  response.render("teacher-detail", { calendar, week, student });
+});
+
+// Serve main student page
 app.get("/", async function(request, response) {
   // If user is not logged in, redirect to login page.
   if (!request.isAuthenticated()) {
@@ -228,23 +272,6 @@ app.post("/:year/:month/:day", async function (request, response) {
     // Send the student to the date they just updated.
     response.redirect(formatDateStringAsUrl(dateString));
   });
-});
-
-app.get("/teacher/", async function(request, response) {
-  // Only allow access if _I_ am logged in.
-  // if (!request.isAuthenticated() || request.user.id !== 9) {
-  //   return response.redirect('/login');
-  // }
-
-  // Get a list of all students
-  const students = await getStudentList();
-
-  // For each student:
-  for (let i = 0; i < students.length; i++) {
-    students[i].week = await getWeek(students[i].id);
-  }
-
-  response.render("teacher", { students });
 });
 
 // Serve a login form.
@@ -703,13 +730,13 @@ async function getRecent(studentId) {
 async function getStudentList() {
   // Get all the students from the database
   const sql = `
-  select 
+  SELECT 
     student_id,
     email,
-    concat_ws(' ', first_name, last_name) as full_name
-  from 
+    CONCAT_WS(' ', first_name, last_name) AS full_name
+  FROM 
     students
-  order by last_name;
+  ORDER BY last_name;
   `;
   const records = await pool.query(sql);
 
@@ -727,6 +754,28 @@ async function getStudentList() {
 
   // Return the array
   return students;
+}
+
+async function getStudent(studentId) {
+  const sql = `
+  SELECT
+    student_id,
+    email,
+    CONCAT_WS(' ', first_name, last_name) AS full_name 
+  FROM 
+    students
+  WHERE 
+    student_id = ($1);
+  `;
+  const sqlParams = [studentId];
+
+  const record = await pool.query(sql, sqlParams);
+
+  return {
+    id: record.rows[0].student_id,
+    email: record.rows[0].email,
+    fullName: record.rows[0].full_name
+  };
 }
 
 /**
