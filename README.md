@@ -13,8 +13,8 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 - [X] There should be a special router for a teacher view.
 - [X] The teacher view should only be visible to me.
 - [X] It should list all students.
-- [ ] It should display each student's record for the past week.
-- [ ] It should indicate whether that record is trending up or down.
+- [X] It should display each student's record for the past week.
+- [X] It should indicate whether that record is trending up or down.
 
 ### v5: Add user registration and authentication
 

@@ -16,7 +16,7 @@
   <main>
     <ul>
     <% for (let i = 0; i < students.length; i++) { %>
-      <li><%= students[i].fullName %></li>
+      <li><%= students[i].fullName %>: <%= students[i].week.count %>/7 (<%= students[i].week.trend %>)</li>
     <% } %>
     </ul>
   </main>

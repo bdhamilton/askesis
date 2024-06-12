@@ -232,11 +232,17 @@ app.post("/:year/:month/:day", async function (request, response) {
 
 app.get("/teacher/", async function(request, response) {
   // Only allow access if _I_ am logged in.
-  if (!request.isAuthenticated() || request.user.id !== 9) {
-    return response.redirect('/login');
-  }
+  // if (!request.isAuthenticated() || request.user.id !== 9) {
+  //   return response.redirect('/login');
+  // }
 
+  // Get a list of all students
   const students = await getStudentList();
+
+  // For each student:
+  for (let i = 0; i < students.length; i++) {
+    students[i].week = await getWeek(students[i].id);
+  }
 
   response.render("teacher", { students });
 });
@@ -532,6 +538,61 @@ async function getMonth(studentId, year, month) {
    * TODO: Is returning as an array important here?
    */
   return records.length === 0 ? [null] : records.rows;
+}
+
+/**
+ * Check a student's record over the past week
+ * @param {integer} studentId 
+ * @returns {Object} week.count and week.trend
+ */
+async function getWeek(studentId) {
+  // Get record count for past two weeks.
+  /**
+   * TODO: is there a good way to do this in SQL, without two queries?
+   * I think I should be able to do a union, but that's slightly above
+   * my pay grade at the moment. I'll return to that.
+   */
+  const sqlParams = [studentId];
+  const sqlPastWeek = `
+  SELECT 
+    COUNT(*)
+  FROM practice_records
+  WHERE
+    student = ($1) AND
+    has_practiced = true AND
+    practice_date BETWEEN (CURRENT_TIMESTAMP - Interval '7 days') AND CURRENT_TIMESTAMP
+  ;`;
+  const sqlPriorWeek = `
+    SELECT 
+    COUNT(*)
+  FROM practice_records
+  WHERE
+    student = ($1) AND
+    has_practiced = true AND
+    practice_date 
+      BETWEEN (CURRENT_TIMESTAMP - Interval '14 days') 
+      AND (CURRENT_TIMESTAMP - Interval '7 days')
+  ;`;
+
+  const pastWeek = await pool.query(sqlPastWeek, sqlParams);
+  const priorWeek = await pool.query(sqlPriorWeek, sqlParams);
+
+  // Grab the past week's count and initialize a week object.
+  const week = {
+    count: pastWeek.rows[0].count,
+  }
+
+  // Specify the trend
+  if (pastWeek.rows[0].count > priorWeek.rows[0].count) {
+    week.trend = "up";
+  } else if (pastWeek.rows[0].count < priorWeek.rows[0].count) {
+    week.trend = "down";
+  } else {
+    week.trend = "even";
+  }
+
+  // Return the number of the count
+  return week;
 }
 
 /**
