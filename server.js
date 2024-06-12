@@ -7,6 +7,12 @@ app.listen(port, function () {
   console.log("App listening on port: " + port);
 });
 
+// Log every request
+app.use(function logRequest(request, response, next) {
+  console.log(`${request.method} ${request.url}`);
+  next();
+});
+
 // Set up the EJS template engine
 app.set('view engine', 'ejs');
 app.set('views', './views/');
@@ -15,12 +21,6 @@ app.use(express.static(__dirname + '/static'));
 // Set up to parse form input
 app.use(express.json());
 app.use(express.urlencoded());
-
-// Basic request logger.
-app.use(function logRequest(request, response, next) {
-  console.log(`${request.method} ${request.url}`);
-  next();
-});
 
 // Set up Postgres
 const pg = require("pg");
@@ -136,6 +136,7 @@ passport.deserializeUser(function(student, callback) {
  * don't feel internally consistent. IDEA: Have `getRecent`
  * return an object with these properties: `today.logged`, 
  * `yesterday.logged`, `week.count`, and `week.trend`.
+ * (Partially implemented on teacher pages, not yet on student pages.)
  */
 
 // Serve main teacher page
