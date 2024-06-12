@@ -2,6 +2,21 @@
 
 ## June 12, 2024
 
+### 11:15am
+
+Things to talk through with Gordon and Lily:
+
+* Repetition in my routes
+* Ordering of get and post routes
+* Dealing with undefined records / checking whether a variable has been set
+  * Undefined records: `server.js`, line 469
+  * Checking whether a variable has been set: `student.ejs`, line 113
+* How important is it that a function certain a consistent type of variable?
+  * `server.js`, line 590 (`getMonth` function)
+* How bad is it to do two SQL queries when one might do?
+  * `server.js`, line 603 (`getWeek` function)
+* Error handling (throughout)
+
 ### 8:30am
 
 I need to think through how this teacher view should work.
