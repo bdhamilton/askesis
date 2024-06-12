@@ -7,7 +7,7 @@ app.listen(port, function () {
   console.log("App listening on port: " + port);
 });
 
-// Set up the template engine
+// Set up the EJS template engine
 app.set('view engine', 'ejs');
 app.set('views', './views/');
 app.use(express.static(__dirname + '/static'));
@@ -112,7 +112,7 @@ passport.use(new LocalStrategy(function verify(email, password, callback) {
 // Maintain login sessions
 passport.serializeUser(function(student, callback) {
   // Save an object with the student's id and username
-  callback(null, { id: student.student_id, email: student.email, firstName: student.first_name });
+  callback(null, { id: student.student_id, firstName: student.first_name, email: student.email });
 });
 
 passport.deserializeUser(function(student, callback) {
@@ -299,7 +299,9 @@ app.post('/register', function(request, response, next) {
       console.log(result);
 
       // Create student object with necessary information
-      const student = {id: result.rows[0].student_id, email: request.body.email, firstName: request.body.firstName};
+      // (Use keys that match database columns, so we don't have to deal
+      // with naming conflicts during login.)
+      const student = { student_id: result.rows[0].student_id, first_name: request.body.firstName, email: request.body.email };
 
       // Call login function (also from passport) to create new login session
       request.login(student, function(error) {
