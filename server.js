@@ -17,12 +17,12 @@ app.use(express.static(__dirname + '/static'));
 
 // Set up to parse form input
 app.use(express.json());
-app.use(express.urlencoded());
+app.use(express.urlencoded({ extended: true }));
 
 // Set up Postgres
 const pg = require("pg");
 const pool = new pg.Pool({
-  connectionString: process.env.connectionString,
+  connectionString: process.env.DATABASE_URL,
 });
 
 // Create database tables
