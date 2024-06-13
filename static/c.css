@@ -246,8 +246,9 @@ p[data-trend="up"]::before {
 
 p[data-trend="even"]::before {
   content: "= ";
-  position: relative;
-  top: 3px;
+  color: goldenrod;
+  font-weight: bold;
+  margin-right: 5px;
 }
 
 p[data-trend="down"]::before {
@@ -389,18 +390,12 @@ STUDENT OVERVIEW
 **/
 
 .studentOverview {
-  border: 1px solid #ccc;
-  border-width:0 1px 1px 0;  display: grid;
+  display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
   list-style: none;
   margin-top: 2rem;
   padding: 0;
-}
-
-.studentOverview-student {
-  border: 1px solid #ccc;
-  border-width: 1px 0 0 1px;
-  padding: 15px;
 }
 
 .studentOverview-link {
@@ -409,10 +404,5 @@ STUDENT OVERVIEW
 }
 
 .studentOverview-link:hover {
-  color: hsl(50deg, 60%, 35%);
-}
-
-.practiceNote-paragraph {
-  font-size: 0.9rem;
-  height: 5rem;
+  color: var(--good-dark)
 }
