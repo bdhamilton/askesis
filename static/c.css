@@ -46,6 +46,13 @@ GLOBAL
   font-family: "Brill", serif;
   font-size: 22px;
   line-height: 1.5;
+  --bad: hsl(0, 75%, 45%);
+  --bad-light: hsl(0, 75%, 85%);
+  --good: #2D8FF0;
+  --good-light: hsl(210, 87%, 86%);
+  --accent: blue;
+  --lightgray: #eee;
+  --darkgray: #aaa;
 }
 
 [lang="en"] {
@@ -90,75 +97,49 @@ PRACTICE FORM
 **/
 
 .recordPractice {
-  background-color: hsl(50deg, 60%, 95%);
-  box-shadow: 0px 0px 5px hsl(50deg, 20%, 65%);
-  margin: .5rem 0;
-  padding: .8rem;
+  background-color: var(--good);
+  border: 1px solid var(--good);
+  border-radius: 5px;
+  box-shadow: 3px 3px 3px #ccc;
+  margin: 1rem 0 1rem -5%;
+  padding: 1rem 5%;
+  width: 110%;
+
+  display: flex;
+  gap: 0.5em;
 }
 
 .recordPractice-header {
-  font-size: 1.6rem;
+  color: white;
+  flex: 2;
+  font-size: 1.5em;
+  text-shadow: 1px 1px #666;
 }
 
-.recordPractice-answers {
-  display: flex;
-  gap: .3rem;
+.recordPractice-btn {
+  background-color: var(--good-light);
+  border: 1px solid var(--good-light);
+  border-radius: 5px;
+  box-shadow: 2px 2px 2px #333;
+  flex: 1;
 }
 
-.recordPractice-answers label {
-  background-color: hsl(50deg, 60%, 98%);
-  border: 1px solid hsl(50deg, 30%, 90%);
-  border-radius: 15px;
-  margin: .3rem 0;
-  padding: .3rem .5rem;
-  width: 50%;
+.recordPractice-btn-no {
+  opacity: .6;
 }
 
-.recordPractice-answers label:hover {
-  background-color: hsl(50deg, 60%, 90%);
+.recordPractice-btn:hover {
+  opacity: 1;
+  background-color: white;
+  border-color: white;
 }
 
-.recordPractice-answers label:has(input:checked) {
-  background-color: hsl(50deg, 60%, 83%);
-}
-
-.recordPractice-answers input[type="radio"] {
-  width: 10%;
-}
-.recordPractice-addNote label {
-  font-weight: bold;
-  display: block;
-}
-
-.recordPractice-addNote textarea {
-  background-color: hsl(50deg, 60%, 98%);
-  border: 1px solid hsl(50deg, 30%, 90%);
-  border-radius: 15px;
-  font-size: .9rem;
-  padding: .5rem;
-  resize: none;
-  width: 100%;
-}
-
-.recordPractice-addNote textarea:focus {
-  background-color: hsl(50deg, 60%, 90%);
-}
-
-.recordPractice-submit {
-  background-color: hsl(50deg, 60%, 78%);
-  border: 0;
-  box-shadow: 2px 2px 2px hsl(50deg, 20%, 65%);
-  margin-top: .3rem;
-  width: 100%;
-}
-
-.recordPractice-submit:hover  {
-  background-color: hsl(50deg, 60%, 83%);
-}
-
-.recordPractice-submit:active  {
+.recordPractice-btn:active {
+  opacity: 1;
+  background-color: white;
+  border-color: white;
   transform: translateY(1px);
-  box-shadow: 1px 1px 1px hsl(50deg, 20%, 65%);
+  box-shadow: 1px 1px 1px #333;
 }
 
 /**
@@ -167,8 +148,6 @@ DISPLAY RECORDS
 
 .displayRecords {
   margin-top: 1rem;
-  padding-top: 1rem;
-  border-top: 1px solid #eee;
 }
 
 .container {
@@ -331,7 +310,7 @@ CALENDAR
 
 .calendar-day[data-editable="true"] 
 .calendar-day-link:hover {
-  background-color: hsl(50deg, 60%, 88%);
+  background-color: var(--good-light);
   cursor: pointer;
 }
 
@@ -342,10 +321,14 @@ CALENDAR
 
 .calendar-day[data-practiced="true"] 
 .calendar-day-link {
-  background: lightgreen;
+  background: var(--good);
 }
 .calendar-day[title] 
 .calendar-day-link {
+  /* background-image: url(/img/fold2.png);
+  background-size: 70%;
+  background-position: top right;
+  background-repeat: no-repeat; */
 }
 
 .calendar-day[title] 
@@ -356,7 +339,7 @@ CALENDAR
   right: 0;
   border-style: solid;
   border-width: 0 12px 12px 0;
-  border-color: #333 #fff;
+  border-color: #555 #fff;
 }
 
 /**
