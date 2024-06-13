@@ -10,8 +10,8 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 ### v8: Once more on the UI
 
-- [ ] Grey out future dates
-- [ ] Change the way notes are marked
+- [X] Grey out future dates
+- [X] Change the way notes are marked
 
 ### v7: Add detailed teacher view
 
