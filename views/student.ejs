@@ -100,9 +100,16 @@
               if (thisDay.editable) {
                 dayAttributes.push('data-editable="true"');
               }
+              if (thisDay.today) {
+                dayAttributes.push(`data-today="true"`);
+              }
+              if (thisDay.selected) {
+                dayAttributes.push(`data-selected="true"`);
+              }
               if (thisDay.note) {
                 dayAttributes.push(`title="${thisDay.note}"`);
               }
+
 
               // And string them together.
               const attributeString = dayAttributes.join(" ");

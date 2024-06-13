@@ -195,7 +195,7 @@ app.get("/teacher/:student_id/:year/:month/:day", async function(request, respon
   }
 
   const student = await getStudent(request.params.student_id);
-  const calendar = await getCalendar(request.params.student_id, request.params.year, request.params.month);
+  const calendar = await getCalendar(request.params.student_id, request.params.year, request.params.month, request.params.day);
   const week = await getWeek(request.params.student_id);
   const todaysRecord = await getDay(request.params.student_id, request.params.year, request.params.month, request.params.day);
   response.render("teacher-detail", { calendar, week, student, todaysRecord });
@@ -239,7 +239,7 @@ app.get("/:year/:month/:day", async function (request, response) {
   const student = request.user;
   const week = await getWeek(student.id);
   const recentPractice = await getRecent(student.id);
-  const calendar = await getCalendar(student.id, request.params.year, request.params.month);
+  const calendar = await getCalendar(student.id, request.params.year, request.params.month, request.params.day);
   const todaysRecord = await getDay(student.id, request.params.year, request.params.month, request.params.day);
   response.render("student", { week, recentPractice, calendar, todaysRecord, student });
 });
@@ -393,9 +393,10 @@ app.post('/register', function(request, response, next) {
  * a given month.
  * @param {integer=} year Defaults to current year
  * @param {integer=} month Defaults to current month
+ * @param {integer} day Optional
  * @returns {Object} .monthTitle, .days, .lastMonthUrl, .nextMonthUrl
  */
-async function getCalendar(studentId, year, month) {
+async function getCalendar(studentId, year, month, day) {
   // [1] Construct the date information we'll need.
 
   // Today, set to midnight (so we can check past or future)
@@ -418,6 +419,9 @@ async function getCalendar(studentId, year, month) {
   nextMonth.setMonth(monthToDisplay.getMonth() + 1);
   const nextMonthParts = formatDate(nextMonth).split("-");
   const nextMonthUrl = formatDateStringAsUrl(`${nextMonthParts[0]}-${nextMonthParts[1]}`);
+
+  // If a day has been specified, get that one too.
+  const selectedDate = day ? new Date(year, month - 1, day, 0, 0, 0, 0) : undefined;
 
   // The first day we'll need to include in the calendar
   const nextDay = new Date(monthToDisplay);
@@ -463,8 +467,17 @@ async function getCalendar(studentId, year, month) {
     }
 
     // If this day is in the past, mark it as editable.
-    if (nextDay < today) {
+    if (nextDay <= today) {
       calendarDay.editable = true;
+    }
+
+    // If this day is today, mark it.
+    if (nextDay.toString() === today.toString()) {
+      calendarDay.today = true;
+    }
+
+    if (selectedDate && nextDay.toString() === selectedDate.toString()) {
+      calendarDay.selected = true;
     }
 
     // If the student logged that day, use the logged info.
