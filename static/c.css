@@ -101,19 +101,33 @@ PRACTICE FORM
   border: 1px solid var(--good);
   border-radius: 5px;
   box-shadow: 3px 3px 3px #ccc;
-  margin: 1rem 0 1rem -5%;
+  margin: 1rem 0;
   padding: 1rem 5%;
-  width: 110%;
 
   display: flex;
-  gap: 0.5em;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+@media (min-width: 70ch) {
+  .recordPractice {
+    width: 105%;
+    margin-left: -2.5%;
+  }
 }
 
 .recordPractice-header {
   color: white;
-  flex: 2;
+  flex: 1;
   font-size: 1.5em;
+  padding-right: 1.5rem;
   text-shadow: 1px 1px #666;
+}
+
+.recordPractice-buttons {
+  flex: 1;
+  display: flex;
+  gap: 0.5em;
 }
 
 .recordPractice-btn {
@@ -122,10 +136,11 @@ PRACTICE FORM
   border-radius: 5px;
   box-shadow: 2px 2px 2px #333;
   flex: 1;
+  padding: 0.1em 1em;
 }
 
 .recordPractice-btn-no {
-  opacity: .6;
+  opacity: .75;
 }
 
 .recordPractice-btn:hover {

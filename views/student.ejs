@@ -29,18 +29,20 @@
       // If today hasn't been logged, prompt them for today first.
       if (recentPractice.today.logged === false) {
         postUrl = recentPractice.today.url;
-        formHeader = 'ἤσκησας σήμερον;';
+        formHeader = 'ἤσκησας&nbsp;σήμερον;';
       // If it has, prompt them for yesterday.
       } else {
         postUrl = recentPractice.yesterday.url;
-        formHeader = 'χθὲς ἤσκησας;';
+        formHeader = 'χθὲς&nbsp;ἤσκησας;';
       }
     %>
     <form action="<%= postUrl %>" method="POST" class="recordPractice">
-      <h3 class="recordPractice-header"><%= formHeader %></h3>
+      <h3 class="recordPractice-header"><%- formHeader %></h3>
       <input type="hidden" name="practiced" id="hiddenPracticed" value="false">
-      <button type="submit" onclick="document.getElementById('hiddenPracticed').value = 'true'"  class="recordPractice-btn">Ναί!</button>
-      <button type="submit" class="recordPractice-btn recordPractice-btn-no">Οὐχί.</button>
+      <div class="recordPractice-buttons">
+        <button type="submit" onclick="document.getElementById('hiddenPracticed').value = 'true'"  class="recordPractice-btn">Ναί!</button>
+        <button type="submit" class="recordPractice-btn recordPractice-btn-no">Οὐχί.</button>
+      </div>
     </form>
 
       <!-- <div class="recordPractice-answers">
