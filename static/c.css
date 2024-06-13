@@ -168,32 +168,14 @@ DISPLAY RECORDS
 
 .container {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: wrap-reverse;
   gap: 1rem;
-  align-items: center;
 }
 
 .practiceNote {
-  background-color: var(--good-light);
-  border: 1px solid var(--good-dark);
-  display: flex;
+  border-left: 1px solid var(--darkgray);
   flex: 1;
-  flex-direction: column;
-  justify-content: center;
-  max-width: calc(17.5rem + 6px); /* 7 x 2.75rem; */
-  min-width: 200px;
-  padding: 0.75em;
-  position: relative;
-}
-
-.practiceNote::before {
-  content:"";
-  position: absolute;
-  top: -1px;
-  right: -1px;
-  border-style: solid;
-  border-width: 0 30px 30px 0;
-  border-color: var(--good-dark) #fff;
+  padding-left: 1rem;
 }
 
 .practiceNote-form {
@@ -204,45 +186,37 @@ DISPLAY RECORDS
 }
 
 .practiceNote-header {
-  font-size: .7rem;
+  border-bottom: 1px dotted var(--darkgray);
   font-weight: bold;
   text-transform: uppercase;
+  margin-bottom: 0.5rem;
 }
 
 .practiceNote-input {
-  background: inherit;
   border: 0;
+  font-size: .9rem;
   height: 6rem;
   outline: 0;
-  margin-left: -.3rem;
-  padding: .3rem;
   resize: none;
   width: 100%;
 }
 
-.practiceNote-input::placeholder {
-}
-
-.practiceNote button {
+.practiceNote-btn {
   align-self: flex-end; 
   background-color: var(--good-dark);
   border: 1px solid var(--good-dark);
   box-shadow: 1px 1px 1px #333;
   color: white;
-  margin-top: 0.5em;
   font-size: 0.8rem;
-  /* background-color: inherit;
-  border: 0;
-  color: hsl(50deg, 60%, 35%);
-  font-size: .8rem;
-  align-self: flex-end; */
+  margin-top: 0.5em;
+  padding: .25em .5em;
 }
 
-.practiceNote button:hover {
+.practiceNote-btn:hover {
   cursor: pointer;
 }
 
-.practiceNote button:active {
+.practiceNote-btn:active {
   transform: translate(1px, 1px);
   box-shadow: 0 0 0 #666;
 }
@@ -253,11 +227,12 @@ DISPLAY RECORDS
 }
 
 .practiceNote span a {
+  color: var(--good-dark)
 }
 
 .notes-pastWeek {
   border: 1px solid #eee;
-  margin-bottom: .5rem;
+  margin-bottom: 2rem;
   padding: .5rem;
   width: 100%;
 }
@@ -288,19 +263,17 @@ CALENDAR
 
 .calendar {
   font-size: .8rem;
-  margin: 1.3rem 0;
   max-width: calc(17.5rem + 6px); /* 7 x 2.75rem; */
 }
 
 .calendar-heading {
   font-size: .8rem;
-  line-height: 1;
   margin-bottom: .5rem;
   text-align: center;
 }
 
 .calendar-changeMonth {
-  color: hsl(50deg, 60%, 38%);
+  color: var(--good-dark);
   padding: 0 1rem;
   text-decoration: none;
 }
