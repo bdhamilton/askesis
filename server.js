@@ -1,16 +1,13 @@
+// Grab config files
+require('dotenv').config()
+
 // Set up Express
 const express = require("express");
 const app = express();
-const port = 8000;
+const port = process.env.PORT;
 
 app.listen(port, function () {
   console.log("App listening on port: " + port);
-});
-
-// Log every request
-app.use(function logRequest(request, response, next) {
-  console.log(`${request.method} ${request.url}`);
-  next();
 });
 
 // Set up the EJS template engine
