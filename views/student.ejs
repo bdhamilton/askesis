@@ -65,9 +65,9 @@
       <%
       // Define message string
       const greekNumbers = ['οὐδεμία', 'μία', 'δύο', 'τρεῖς','τέσσαρες', 'πέντε', 'ἕξ', 'ἑπτὰ'];
-      let pastSevenMessage = `<strong>${greekNumbers[countFromPastSevenDays]}</strong> τῶν ἑπτὰ παρελθουσῶν ἡμερῶν ἤσκηκας.`;
+      let weekMessage = `<strong>${greekNumbers[week.count]}</strong> τῶν ἑπτὰ παρελθουσῶν ἡμερῶν ἤσκηκας.`;
       %>
-      <p class="notes-pastWeek"><%- pastSevenMessage %></p>
+      <p class="notes-pastWeek" data-trend="<%= week.trend %>"><%- weekMessage %></p>
     
       <div class="container">
         <div class="calendar" lang="en">
@@ -110,7 +110,7 @@
         
         <% 
         // If we're on a day page:
-        if (typeof todaysRecord === "object") {
+        if (typeof todaysRecord === 'object') {
           // And if the date is in the past:
           if (todaysRecord.future !== true) {
             // Write a form letting the student update today's note.

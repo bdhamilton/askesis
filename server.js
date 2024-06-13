@@ -151,6 +151,7 @@ app.get("/teacher", async function(request, response) {
 
   // For each student:
   for (let i = 0; i < students.length; i++) {
+
     students[i].week = await getWeek(students[i].id);
   }
 
@@ -208,10 +209,10 @@ app.get("/", async function(request, response) {
   }
 
   const student = request.user;
-  const countFromPastSevenDays = await getCountFromPastSevenDays(student.id);
+  const week = await getWeek(student.id);
   const recentPractice = await getRecent(student.id);
   const calendar = await getCalendar(student.id);
-  response.render("student", { countFromPastSevenDays, recentPractice, calendar, student });
+  response.render("student", { week, recentPractice, calendar, student });
 });
 
 // Serve calendar from a specific month
@@ -222,10 +223,10 @@ app.get("/:year/:month", async function (request, response) {
   }
   
   const student = request.user;
-  const countFromPastSevenDays = await getCountFromPastSevenDays(student.id);
+  const week = await getWeek(student.id);
   const recentPractice = await getRecent(student.id);
   const calendar = await getCalendar(student.id, request.params.year, request.params.month);
-  response.render("student", { countFromPastSevenDays, recentPractice, calendar, student });
+  response.render("student", { week, recentPractice, calendar, student });
 });
 
 // Serve calendar and note from a specific day
@@ -236,11 +237,11 @@ app.get("/:year/:month/:day", async function (request, response) {
   }
   
   const student = request.user;
-  const countFromPastSevenDays = await getCountFromPastSevenDays(student.id);
+  const week = await getWeek(student.id);
   const recentPractice = await getRecent(student.id);
   const calendar = await getCalendar(student.id, request.params.year, request.params.month);
-  const todaysRecord = await getDay(student.id, request.params.year, request.params.month, request.params.day) || { logged: false };
-  response.render("student", { countFromPastSevenDays, recentPractice, calendar, todaysRecord, student });
+  const todaysRecord = await getDay(student.id, request.params.year, request.params.month, request.params.day);
+  response.render("student", { week, recentPractice, calendar, todaysRecord, student });
 });
 
 // Add or update a record for a specific day
@@ -491,28 +492,6 @@ async function getCalendar(studentId, year, month) {
 
   // [5] Return the calendar.
   return { monthTitle, days, lastMonthUrl, nextMonthUrl };
-}
-
-/**
- * Query the database for the number of times the student
- * has practiced in the past seven days.
- * @returns {number} Number of practice sessions out of seven.
- */
-async function getCountFromPastSevenDays(studentId) {
-  const sql = `
-  SELECT 
-    COUNT(*)
-  FROM practice_records
-  WHERE
-    student = ($1) AND
-    has_practiced = true AND
-    practice_date BETWEEN (CURRENT_TIMESTAMP - Interval '7 days') AND CURRENT_TIMESTAMP
-  ;`;
-  const sqlParameters = [studentId];
-  const records = await pool.query(sql, sqlParameters);
-
-  // Return the number of the count
-  return records.rows[0].count;
 }
 
 /**
