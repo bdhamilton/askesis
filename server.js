@@ -21,7 +21,9 @@ app.use(express.urlencoded());
 
 // Set up Postgres
 const pg = require("pg");
-const pool = new pg.Pool();
+const pool = new pg.Pool({
+  connectionString: process.env.connectionString,
+});
 
 // Create database tables
 pool.query(`
