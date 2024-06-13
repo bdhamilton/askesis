@@ -62,15 +62,20 @@ CREATE TABLE IF NOT EXISTS
 //   );
 // `);
 
-// Get authentication packages
+// Set up session packages
 const session = require('express-session');
+const RedisStore = require('connect-redis')(session);
+const redis = require('redis');
+const redisClient = redis.createClient();
+
 const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const crypto = require('crypto');
 
 // Set up a session
 app.use(session({
-  secret: 'bdhamilton-934-983-458', // random string used to authenticate a session
+  store: new RedisStore({ client: redisClient }),
+  secret: process.env.SESSION_SECRET, // random string used to authenticate a session
   resave: false, // don't save session if unchanged
   saveUninitialized: false // don't create session until something stored
 }));
