@@ -301,6 +301,10 @@ CALENDAR
   justify-items: center;
 }
 
+.calendar-day {
+  position: relative;
+}
+
 .calendar-day:not([data-this-month="true"]) {
   visibility: hidden;
 }
@@ -342,10 +346,17 @@ CALENDAR
 }
 .calendar-day[title] 
 .calendar-day-link {
-  background-image: url(/img/fold.png);
-  background-repeat: no-repeat;
-  background-position: top right;
-  background-size: 50%;
+}
+
+.calendar-day[title] 
+.calendar-day-link::before {
+  content:"";
+  position: absolute;
+  top: 0;
+  right: 0;
+  border-style: solid;
+  border-width: 0 12px 12px 0;
+  border-color: #333 #fff;
 }
 
 /**
