@@ -8,6 +8,11 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 ## Versions
 
+### v8: Once more on the UI
+
+- [ ] Grey out future dates
+- [ ] Change the way notes are marked
+
 ### v7: Add detailed teacher view
 
 - [X] There should be routers for detailed teacher views

@@ -178,13 +178,13 @@ DISPLAY RECORDS
 }
 
 .practiceNote {
-  flex: 1;
-  min-width: 200px;
+  background-color: #eee;
   display: flex;
+  flex: 1;
   flex-direction: column;
   justify-content: center;
-  border-left: 1px solid #eee; 
-  padding-left: 1em;
+  min-width: 200px;
+  padding: 1em;
 }
 
 .practiceNote-form {
@@ -243,11 +243,30 @@ DISPLAY RECORDS
 }
 
 .notes-pastWeek {
-  background-color: hsl(50deg, 60%, 95%);
-  border: 1px solid hsl(50deg, 60%, 90%);
+  border: 1px solid #eee;
   margin-bottom: .5rem;
   padding: .5rem;
   width: 100%;
+}
+
+p[data-trend="up"]::before {
+  content: "⬆ ";
+  color: green;
+  position: relative;
+  top: 3px;
+}
+
+p[data-trend="even"]::before {
+  content: "= ";
+  position: relative;
+  top: 3px;
+}
+
+p[data-trend="down"]::before {
+  content: "⬇ ";
+  color: red;
+  position: relative;
+  top: 3px;
 }
 
 /**
@@ -257,7 +276,7 @@ CALENDAR
 .calendar {
   font-size: .8rem;
   margin: 1.3rem 0;
-  max-width: 17.5rem; /* 7 x 2.75rem; */
+  max-width: calc(17.5rem + 6px); /* 7 x 2.75rem; */
 }
 
 .calendar-heading {
@@ -275,6 +294,7 @@ CALENDAR
 
 .calendar-list {
   display: grid;
+  gap: 1px; /* TODO: make sure this stays even on phones */
   grid-template-columns: repeat(7, minmax(0, 2.5rem));
   list-style: none;
   padding: 0;
@@ -287,18 +307,22 @@ CALENDAR
 
 .calendar-day-link {
   align-items: center;
-  border: 1px solid hsl(50deg, 60%, 78%);
-  border-radius: calc(13vw / 2);
+  border: 1px solid #ddd;
   color: inherit;
   display: flex;
   font-size: .6rem;
   justify-content: center;
   text-decoration: none;
   
-  height: 13vw;
-  width: 13vw;
+  height: 12vw;
+  width: 12vw;
   max-height: 2.5rem;
   max-width: 2.5rem;
+}
+
+.calendar-day:not([data-editable="true"]) 
+.calendar-day-link {
+  background-color: #eee;
 }
 
 .calendar-day[data-editable="true"] 
@@ -314,11 +338,14 @@ CALENDAR
 
 .calendar-day[data-practiced="true"] 
 .calendar-day-link {
-  background: hsl(50deg, 60%, 78%) url(/img/practiced.svg);
+  background: lightgreen;
 }
 .calendar-day[title] 
-.calendar-day-link::after {
-  content: "*";
+.calendar-day-link {
+  background-image: url(/img/fold.png);
+  background-repeat: no-repeat;
+  background-position: top right;
+  background-size: 50%;
 }
 
 /**
@@ -357,20 +384,6 @@ STUDENT OVERVIEW
 
 .studentOverview-link:hover {
   color: hsl(50deg, 60%, 35%);
-}
-
-p[data-trend="up"]::before {
-  content: "⬆ ";
-  color: green;
-}
-
-p[data-trend="even"]::before {
-  content: "= ";
-}
-
-p[data-trend="down"]::before {
-  content: "⬇ ";
-  color: red;
 }
 
 .practiceNote-paragraph {
