@@ -139,6 +139,7 @@ PRACTICE FORM
   border: 1px solid var(--good-light);
   border-radius: 5px;
   box-shadow: 2px 2px 2px #333;
+  color: black;
   flex: 1;
   padding: 0.1em 1em;
 }
@@ -386,6 +387,11 @@ footer {
   float: right;
   font-size: 0.8rem;
   margin-top: 0.5rem;
+}
+
+.logoutForm button {
+  border: 1px solid var(--darkgray);
+  background-color: var(--lightgray);
 }
 
 /**
