@@ -237,29 +237,29 @@ DISPLAY RECORDS
 .notes-pastWeek {
   border: 1px solid #eee;
   margin-bottom: 2rem;
-  padding: .5rem;
+  padding: .5rem .5rem .5rem 65px;
   width: 100%;
 }
 
-p[data-trend="up"]::before {
-  content: "⬆ ";
-  color: green;
-  position: relative;
-  top: 3px;
+.notes-pastWeek[data-trend="up"] {
+  background-image: url('/img/arrow-up-bold-circle.svg');
+  background-position: 15px center;
+  background-size: 35px;
+  background-repeat: no-repeat ;
 }
 
-p[data-trend="even"]::before {
-  content: "= ";
-  color: goldenrod;
-  font-weight: bold;
-  margin-right: 5px;
+.notes-pastWeek[data-trend="even"] {
+  background-image: url('/img/arrow-right-bold-circle.svg');
+  background-position: 15px center;
+  background-size: 35px;
+  background-repeat: no-repeat ;
 }
 
-p[data-trend="down"]::before {
-  content: "⬇ ";
-  color: red;
-  position: relative;
-  top: 3px;
+.notes-pastWeek[data-trend="down"] {
+  background-image: url('/img/arrow-down-bold-circle.svg');
+  background-position: 15px center;
+  background-size: 35px;
+  background-repeat: no-repeat ;
 }
 
 /**
@@ -445,4 +445,9 @@ REGISTRATION AND LOGIN
   background-color: var(--lightgray);
   color: black;
   margin-top: 1rem;
+  padding: 0.25em 1em;
+}
+
+.help a {
+  color: var(--good-dark);
 }
