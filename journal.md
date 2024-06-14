@@ -1,5 +1,19 @@
 # Journal
 
+## June 14, 2024
+
+Done! Deployed! I've been fiddling with design over the past couple of days, but most of my time has gone into figuring out how to deploy the thing. I got my own VPS set up that could run Postgres and Node.js and got everything set up to run at https://askesis.hmltn.dev/. Gordon and Lily said that the next best step would be to just get it in front of users, so I did a little polishing and I'm going to send it out to my Greek students. 
+
+There are other things to think about eventually:
+
+* More and better analytics and visualization for students and for me, which will be interesting once there's a nice set of student data to play with. Gordon mentioned the idea of a Github-style display, for example.
+* Find ways to make it easier for students to log their practice. Send them an email or a text every day, for example, and let them log with a text or a button click.
+* I didn't implement the teacher-notes idea, but if seems useful, that should be pretty straightforward.
+
+What are the major lessons I learned here?
+
+A lot of it was technical. I learned how to work with Postgres; I learned how Express routers work; I learned a whole hell of a lot about JavaScript's annoying `date` objects. It's been nice just to start getting familiar with how things work. 
+
 ## June 12, 2024
 
 ### 11:15am
