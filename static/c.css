@@ -392,6 +392,7 @@ footer {
 .logoutForm button {
   border: 1px solid var(--darkgray);
   background-color: var(--lightgray);
+  color: black;
 }
 
 /**
@@ -435,9 +436,13 @@ REGISTRATION AND LOGIN
 }
 
 .entryform input {
-  width: 40ch;
+  max-width: 40ch;
+  width: 100%;
 }
 
 .entryform button {
+  border: 1px solid var(--darkgray);
+  background-color: var(--lightgray);
+  color: black;
   margin-top: 1rem;
 }
