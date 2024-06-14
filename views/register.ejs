@@ -13,25 +13,36 @@
   </header>
 
   <main>
-    <form method="POST" action="/register">
-      <label for="email">Email Address: </label></br>
-      <input name="email" value=""></input>
-      </br>
-      <label for="firstName">First Name:</label><br>
-      <input type="text" name="firstName" id="firstName">
-      <br>
-      <label for="lastName">Last Name:</label><br>
-      <input type="text" name="lastName" id="lastName">
-      <br>
-      <label for="new-password">Password: </label></br>
-      <input id="new-password" name="password" type="password" autocomplete="new-password" required>
-      </br>
+    <h2 class="highlight">χαίρετε, ὦ φίλοι!</h2>
+    <p lang="en">I wrote this little app to replace those silly sheets of paper we used to track our practice last semester. Next year, I’ll ask you to log your practice here instead. Register now and start keeping track of what you’re reading this summer!</p>
+
+    <form method="POST" action="/register" class="entryform" lang="en">
+      <div>
+        <label for="firstName">First Name</label>
+        <input type="text" name="firstName" id="firstName">
+      </div>
+      
+      <div>
+        <label for="lastName">Last Name</label>
+        <input type="text" name="lastName" id="lastName">
+      </div>
+
+      <div>
+        <label for="email">Email Address</label>
+        <input name="email" value=""></input>
+      </div>
+      
+      <div>
+        <label for="new-password">Password </label>
+        <input id="new-password" name="password" type="password" autocomplete="new-password" required>
+      </div>
+      
 
       <button type="submit">Sign Up</button>
     </form>
 
     <!-- Link to Login page -->
-    <p class="help">Already have an account? <a href="/login">Log In</a></p>
+    <p class="help" lang="en">Already registered? <a href="/login">Log in</a> and get tracking!</p>
   </main>
 </body>
 </html>

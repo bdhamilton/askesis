@@ -13,20 +13,26 @@
   </header>
 
   <main>
-    <form method="POST" action="/login/password">
-      <label for="username">Email Address: </label></br>
-      <input name="username" value=""></input>
-      </br>
+    <h2 class="highlight">χαίρετε, ὦ φίλοι!</h2>
 
-      <label for="current-password">Password: </label></br>
-      <input id="current-password" name="password" type="password" autocomplete="current-password" required>
-      </br>
+    <form method="POST" action="/login/password" class="entryform" lang="en">
+      <div>
+        <label for="username">Email Address: </label>
+        <input name="username" value="" required></input>
+      </div>
+      
+
+      <div>
+        <label for="current-password">Password: </label>
+        <input id="current-password" name="password" type="password" autocomplete="current-password" required>
+      </div>
+      
 
       <button type="submit">Log In</button>
     </form>
 
     <!-- Link to signup form -->
-    <p class="help">Don't have an account yet? <a href="/register">Sign Up</a></p>
+    <p class="help" lang="en">Don’t have an account yet? <a href="/register">Sign up</a>!</p>
   </main>
 </body>
 </html>
