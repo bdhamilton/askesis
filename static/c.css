@@ -185,8 +185,9 @@ DISPLAY RECORDS
 .practiceNote-form {
   display: flex;
   flex-direction: column;
-  justify-content: center;
   height: 100%;
+  justify-content: center;
+  margin-bottom: 1.5rem;
 }
 
 .practiceNote-header {
