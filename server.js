@@ -141,7 +141,7 @@ passport.deserializeUser(function(student, callback) {
 // Serve main teacher page
 app.get("/teacher", async function(request, response) {
   // Only allow access if _I_ am logged in.
-  if (!request.isAuthenticated() || request.user.id !== 9) {
+  if (!request.isAuthenticated() || request.user.email !== 'bdhamilton@gmail.com') {
     return response.redirect('/login');
   }
 
@@ -165,7 +165,7 @@ app.get("/teacher", async function(request, response) {
  */
 app.get("/teacher/:student_id", async function(request, response) {
   // Only allow access if _I_ am logged in.
-  if (!request.isAuthenticated() || request.user.id !== 9) {
+  if (!request.isAuthenticated() || request.user.email !== 'bdhamilton@gmail.com') {
     return response.redirect('/login');
   }
 
@@ -177,7 +177,7 @@ app.get("/teacher/:student_id", async function(request, response) {
 
 app.get("/teacher/:student_id/:year/:month", async function(request, response) {
   // Only allow access if _I_ am logged in.
-  if (!request.isAuthenticated() || request.user.id !== 9) {
+  if (!request.isAuthenticated() || request.user.email !== 'bdhamilton@gmail.com') {
     return response.redirect('/login');
   }
 
@@ -189,7 +189,7 @@ app.get("/teacher/:student_id/:year/:month", async function(request, response) {
 
 app.get("/teacher/:student_id/:year/:month/:day", async function(request, response) {
   // Only allow access if _I_ am logged in.
-  if (!request.isAuthenticated() || request.user.id !== 9) {
+  if (!request.isAuthenticated() || request.user.email !== 'bdhamilton@gmail.com') {
     return response.redirect('/login');
   }
 
