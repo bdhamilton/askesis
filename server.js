@@ -25,6 +25,17 @@ const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });
 
+// Set up nodemailer
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+  auth: {
+    user: "bdhamilton@gmail.com",
+    pass: process.env.GMAIL,
+  },
+});
+
 // Create database tables
 pool.query(`
 CREATE TABLE IF NOT EXISTS
@@ -70,7 +81,7 @@ const crypto = require('crypto');
 
 // Set up a session
 app.use(session({
-  secret: 'bdhamilton-934-983-458', // random string used to authenticate a session
+  secret: process.env.SESSION_SECRET, // random string used to authenticate a session
   resave: false, // don't save session if unchanged
   saveUninitialized: false // don't create session until something stored
 }));
@@ -366,12 +377,24 @@ app.post('/register', function(request, response, next) {
         return next(error); 
       }
 
-      console.log(result);
-
       // Create student object with necessary information
       // (Use keys that match database columns, so we don't have to deal
       // with naming conflicts during login.)
       const student = { student_id: result.rows[0].student_id, first_name: request.body.firstName, email: request.body.email };
+
+      // Send myself a message letting me know that someone registered
+      const message = {
+        from: "Askesis <bdhamilton@gmail.com>",
+        to: "bdhamilton@gmail.com",
+        subject: "Someone registered!",
+        text: `${student.first_name} ${request.body.lastName} (${student.email}) registered for Askesis!`,
+      };
+    
+      transporter.sendMail(message, (error, info) => {
+        if (error) {
+          return console.log(error);
+        }
+      });
 
       // Call login function (also from passport) to create new login session
       request.login(student, function(error) {
