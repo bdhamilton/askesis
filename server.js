@@ -36,6 +36,52 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+// Set up cron job to email teacher daily
+const cron = require('cron');
+
+async function sendWeeklySummary() {
+  // Get a list of all students
+  const students = await getStudentList();
+
+  // For each student:
+  for (let i = 0; i < students.length; i++) {
+    students[i].week = await getWeek(students[i].id);
+  }
+
+  let summary = '<ul>\n';
+  for (let student of students) {
+    summary += `\t<li><a href="https://askesis.hmltn.dev/teacher/${student.id}">${student.fullName}</a>: ${student.week.count} of last 7 days (trending ${student.week.trend})</li>\n`;
+  }
+  summary += "</ul>"
+
+  const message = {
+    from: "Askesis <bdhamilton@gmail.com>",
+    to: "bdhamilton@gmail.com",
+    subject: "Student practice summary",
+    html: summary,
+  };
+
+  transporter.sendMail(message, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+  });
+}
+
+const job = new cron.CronJob(
+	'0 0 9 * * 2,4',      // cronTime
+	function() {          // onTick
+    sendWeeklySummary();
+  }, 
+	null,                 // onComplete
+	true,                 // start
+	'America/New_York',    // timeZone
+  null,
+  true
+);
+
+
+
 // Create database tables
 pool.query(`
 CREATE TABLE IF NOT EXISTS

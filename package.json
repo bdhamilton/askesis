@@ -18,6 +18,7 @@
   },
   "homepage": "https://github.com/bdhamilton/askesis#readme",
   "dependencies": {
+    "cron": "^3.1.7",
     "dotenv": "^16.4.5",
     "ejs": "^3.1.10",
     "express": "^4.19.2",
