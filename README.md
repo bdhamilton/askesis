@@ -4,11 +4,19 @@ An app for recording Greek practice.
 
 Students can mark whether they practiced and add practice notes. Teacher can see practice records for all students.
 
+Next features to implement:
+
+* The teacher should get an email every morning with a log of who practiced and who didn't
+* The teacher should be taken directly to teacher page when logged in
+* Students should be able to log practice via SMS
+* Students should be able to reset their passwords
+* Users not signed in should see a landing page with demo (mostly for potential employers)
+
 ## Versions
 
 ### 1.0: First public-facing version
 
-I finished the first public-ready version of this on June 14, 2024, and started sending it to student. I'll keep developing as necessary once I've got some user feedback.
+I finished the first public-ready version of this on June 14, 2024, and started sending it to students. I'll keep developing as necessary once I've got some user feedback.
 
 ### 0.8: Once more on the UI
 
