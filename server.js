@@ -48,11 +48,11 @@ async function sendWeeklySummary() {
     students[i].week = await getWeek(students[i].id);
   }
 
-  let summary = '<ul>\n';
+  let summary = '';
   for (let student of students) {
-    summary += `\t<li><a href="https://askesis.hmltn.dev/teacher/${student.id}">${student.fullName}</a>: ${student.week.count} of last 7 days (trending ${student.week.trend})</li>\n`;
+    summary += `<p>${student.fullName}: ${student.week.count} of last 7 days (trending ${student.week.trend})</p>\n`;
   }
-  summary += "</ul>"
+  summary += `<p><a href="https://askesis.hmltn.dev/teacher/">View all</a></p>`;
 
   const message = {
     from: "Askesis <bdhamilton@gmail.com>",
