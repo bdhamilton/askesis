@@ -182,19 +182,6 @@ passport.deserializeUser(function(student, callback) {
   callback(null, student);
 });
 
-// 
-
-/**
- * TODO: Is there a better way of handling these get routes,
- * given that they all do almost the exact thing?
- * 
- * TODO: Is there a better way to name these variables? They
- * don't feel internally consistent. IDEA: Have `getRecent`
- * return an object with these properties: `today.logged`, 
- * `yesterday.logged`, `week.count`, and `week.trend`.
- * (Partially implemented on teacher pages, not yet on student pages.)
- */
-
 // Serve main teacher page
 app.get("/teacher", async function(request, response) {
   // Only allow access if _I_ am logged in.
@@ -215,11 +202,6 @@ app.get("/teacher", async function(request, response) {
 });
 
 // Get current information about a particular student
-/**
- * TODO: I was getting an error here when this request processor
- * came after the month or day processors, because "teacher" in the
- * string was being read as a month year value. Best practices here?
- */
 app.get("/teacher/:student_id", async function(request, response) {
   // Only allow access if _I_ am logged in.
   if (!request.isAuthenticated() || request.user.email !== 'bdhamilton@gmail.com') {
