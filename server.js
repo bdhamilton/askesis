@@ -350,15 +350,18 @@ app.get('/login', function(request, response, next) {
   response.render("login");
 });
 
-// Store function (returned by passport.authenticate) that we want to call for POST requests to "/login"
-const passportAuthenticateFunction = passport.authenticate('local', {
-  successReturnToOrRedirect: '/',
-  failureRedirect: '/login',
-  failureMessage: true
-});
-
 // Handle logins
-app.post('/login/password', passportAuthenticateFunction);
+// If teacher is logging in, send to teacher page; otherwise send to root
+app.post('/login/password', 
+  passport.authenticate('local', { failureRedirect: '/login', failureMessage: true }), 
+  function(request, response) {
+    if (request.user.email === "bdhamilton@gmail.com") {
+      response.redirect("/teacher/");
+    } else {
+      response.redirect("/");
+    }
+  }
+);
 
 // Handle logouts
 app.post('/logout', function(request, response) {

@@ -6,11 +6,11 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 Next features to implement:
 
-* The teacher should get an email every morning with a log of who practiced and who didn't
-* The teacher should be taken directly to teacher page when logged in
-* Students should be able to log practice via SMS
-* Students should be able to reset their passwords
-* Users not signed in should see a landing page with demo (mostly for potential employers)
+* [X] The teacher should get an email every morning with a log of who practiced and who didn't
+* [X] The teacher should be taken directly to teacher page when logged in
+* [ ] Students should be able to log practice via SMS
+* [ ] Students should be able to reset their passwords
+* [ ] Users not signed in should see a landing page with demo (mostly for potential employers)
 
 ## Versions
 
