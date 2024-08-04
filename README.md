@@ -21,7 +21,7 @@ Next features to implement:
 * [ ] It should accept a response from students to log their practice
   * [X] It should accept text messages
   * [X] It should respond to yes and no messages differently
-  * [ ] It should check if the incoming number is recognized
+  * [X] It should check if the incoming number is recognized
   * [ ] If recognized and not yet logged, log the practice
   * [ ] If recognized and already logged, confirm update and then log the practice
 * [ ] It should follow up by asking them what they did

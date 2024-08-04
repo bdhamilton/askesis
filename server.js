@@ -942,14 +942,48 @@ async function remindStudents() {
  */
 const { MessagingResponse } = require('twilio').twiml;
 
-function processIncomingText(request, response) {
+async function processIncomingText(request, response) {
   const twiml = new MessagingResponse();
+
+  // Check if this incoming number belongs to a student, and if so,
+  // whether that student has already logged a practice for today.
+  const sqlParameters = [request.body.From];
+  const sql = `
+    SELECT
+      s.student_id,
+      s.first_name as name,
+      pr.has_practiced,
+      pr.note
+    FROM students s
+    LEFT JOIN (
+      SELECT
+        student,
+        has_practiced,
+        note
+      FROM practice_records
+      WHERE
+        practice_date = CURRENT_DATE
+    ) pr ON s.student_id = pr.student
+    WHERE
+      s.phone = ($1)
+  ;`;
+
+  const records = await pool.query(sql, sqlParameters);
+
+  // If there's no student at this number, send an appropriate response.
+  if (records.rows.length === 0) {
+    twiml.message(`I don't know this number! If you're one of my students, log into the app and add your number to your account.`);
+    response.type('text/xml').send(twiml.toString());
+    return;
+  }
+
+  // If there is, grab the student's information.
+  const student = records.rows[0];
   
   // Format incoming responses
   function stripDiacritics(text) {
     return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   }
-
   let textReply = stripDiacritics(request.body.Body).toLowerCase();
 
   // Define yes and no replies
@@ -958,7 +992,8 @@ function processIncomingText(request, response) {
 
   // Reply in the appropriate way
   if (yesReplies.includes(textReply)) {
-    twiml.message('καλῶς!');
+    
+    twiml.message(`καλῶς, ${student.name}!`);
   } else if (noReplies.includes(textReply)) {
     twiml.message('φεῦ! αὔριον πείρα!')
   } else {
