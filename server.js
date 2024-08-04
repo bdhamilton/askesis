@@ -36,52 +36,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Set up cron job to email teacher daily
-const cron = require('cron');
-
-async function sendWeeklySummary() {
-  // Get a list of all students
-  const students = await getStudentList();
-
-  // For each student:
-  for (let i = 0; i < students.length; i++) {
-    students[i].week = await getWeek(students[i].id);
-  }
-
-  let summary = '';
-  for (let student of students) {
-    summary += `<p>${student.fullName}: ${student.week.count} of last 7 days (trending ${student.week.trend})</p>\n`;
-  }
-  summary += `<p><a href="https://askesis.hmltn.dev/teacher/">View all</a></p>`;
-
-  const message = {
-    from: "Askesis <bdhamilton@gmail.com>",
-    to: "bdhamilton@gmail.com",
-    subject: "Student practice summary",
-    html: summary,
-  };
-
-  transporter.sendMail(message, (error, info) => {
-    if (error) {
-      return console.log(error);
-    }
-  });
-}
-
-const job = new cron.CronJob(
-	'0 0 9 * * 2,4',      // cronTime
-	function() {          // onTick
-    sendWeeklySummary();
-  }, 
-	null,                 // onComplete
-	true,                 // start
-	'America/New_York',    // timeZone
-  null,
-  true
-);
-
-
-
 // Create database tables
 pool.query(`
 CREATE TABLE IF NOT EXISTS
@@ -877,3 +831,51 @@ function formatDateStringAsUrl(date) {
 
   return dateUrl;
 }
+
+/**
+ * TEACHER EMAIL NOTIFICATIONS
+ */
+
+// Set up cron job to email teacher daily
+const cron = require('cron');
+
+async function sendWeeklySummary() {
+  // Get a list of all students
+  const students = await getStudentList();
+
+  // For each student:
+  for (let i = 0; i < students.length; i++) {
+    students[i].week = await getWeek(students[i].id);
+  }
+
+  let summary = '';
+  for (let student of students) {
+    summary += `<p>${student.fullName}: ${student.week.count} of last 7 days (trending ${student.week.trend})</p>\n`;
+  }
+  summary += `<p><a href="https://askesis.hmltn.dev/teacher/">View all</a></p>`;
+
+  const message = {
+    from: "Askesis <bdhamilton@gmail.com>",
+    to: "bdhamilton@gmail.com",
+    subject: "Student practice summary",
+    html: summary,
+  };
+
+  transporter.sendMail(message, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+  });
+}
+
+const job = new cron.CronJob(
+	'0 0 9 * * 2,4',      // cronTime
+	function() {          // onTick
+    sendWeeklySummary();
+  }, 
+	null,                 // onComplete
+	true,                 // start
+	'America/New_York',    // timeZone
+  null,
+  true
+);
