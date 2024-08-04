@@ -6,15 +6,28 @@ Students can mark whether they practiced and add practice notes. Teacher can see
 
 Next features to implement:
 
-* [X] The teacher should get an email every morning with a log of who practiced and who didn't
-* [X] The teacher should be taken directly to teacher page when logged in
+
 * [ ] Students should be able to log practice via SMS
 * [ ] Students should be able to reset their passwords
 * [ ] Users not signed in should see a landing page with demo (mostly for potential employers)
 
 ## Versions
 
-### 1.0: First public-facing version
+### 1.2: students should be able to log practice via SMS
+
+* [X] It should be able to send texts to students
+* [ ] Database should include phone numbers
+* [ ] Every day at 5pm, it should text opted-in students who haven't logged a practice yet
+* [ ] It should accept a response from students to log their practice
+* [ ] It should follow up by asking them what they did
+* [ ] It should not accidentally double-log information
+
+### 1.1: some teacher upgrades
+
+* [X] The teacher should get an email every morning with a log of who practiced and who didn't
+* [X] The teacher should be taken directly to teacher page when logged in
+
+### 1.0: First public-facing version (tagged)
 
 I finished the first public-ready version of this on June 14, 2024, and started sending it to students. I'll keep developing as necessary once I've got some user feedback.
 
