@@ -44,6 +44,7 @@ CREATE TABLE IF NOT EXISTS
     first_name TEXT,
     last_name TEXT,
     email TEXT UNIQUE,
+    phone TEXT UNIQUE,
     hashed_password BYTEA,
     salt BYTEA
   );
