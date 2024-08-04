@@ -194,6 +194,8 @@ app.get("/teacher/:student_id/:year/:month/:day", async function(request, respon
   response.render("teacher-detail", { calendar, week, student, todaysRecord });
 });
 
+app.post('/sms', processIncomingText);
+
 // Serve main student page
 app.get("/", async function(request, response) {
   // If user is not logged in, redirect to login page.
@@ -882,7 +884,7 @@ const job = new cron.CronJob(
 	true,                 // start
 	'America/New_York',    // timeZone
   null,
-  true
+  false                   // fire on init
 );
 
 /**
@@ -903,7 +905,7 @@ const reminderJob = new cron.CronJob(
 	true,                 // start
 	'America/New_York',    // timeZone
   null,
-  true
+  false                   // Run on init
 );
 
 async function remindStudents() {
@@ -933,4 +935,36 @@ async function remindStudents() {
       to: student.phone,
     });
   });
+}
+
+/**
+ * RECEIVE REPLIES FROM STUDENTS
+ */
+const { MessagingResponse } = require('twilio').twiml;
+
+function processIncomingText(request, response) {
+  const twiml = new MessagingResponse();
+  
+  // Format incoming responses
+  function stripDiacritics(text) {
+    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  let textReply = stripDiacritics(request.body.Body).toLowerCase();
+
+  // Define yes and no replies
+  const yesReplies = ["yes", "y", "ναι", "ν"];
+  const noReplies = ["no", "n", "ου", "ουχι", "ο"];
+
+  // Reply in the appropriate way
+  if (yesReplies.includes(textReply)) {
+    twiml.message('καλῶς!');
+  } else if (noReplies.includes(textReply)) {
+    twiml.message('φεῦ! αὔριον πείρα!')
+  } else {
+    twiml.message(`I didn't catch that! Please respond with either ναί or οὐχί.`);
+  }
+
+  // Send the message
+  response.type('text/xml').send(twiml.toString());
 }
