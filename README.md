@@ -16,11 +16,12 @@ Next features to implement:
 ### 1.2: students should be able to log practice via SMS
 
 * [X] It should be able to send texts to students
-* [ ] Database should include phone numbers
-* [ ] Every day at 5pm, it should text opted-in students who haven't logged a practice yet
+* [X] Database should include phone numbers
+* [X] Every day at 5pm, it should text opted-in students who haven't logged a practice yet
 * [ ] It should accept a response from students to log their practice
 * [ ] It should follow up by asking them what they did
 * [ ] It should not accidentally double-log information
+* [ ] It should allow students to add or delete a phone number
 
 ### 1.1: some teacher upgrades
 

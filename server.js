@@ -759,7 +759,8 @@ async function getStudentList() {
   SELECT 
     student_id,
     email,
-    CONCAT_WS(' ', first_name, last_name) AS full_name
+    CONCAT_WS(' ', first_name, last_name) AS full_name,
+    phone
   FROM 
     students
   ORDER BY last_name;
@@ -772,7 +773,8 @@ async function getStudentList() {
     const student = {
       id: records.rows[i].student_id,
       fullName: records.rows[i].full_name,
-      email: records.rows[i].email
+      email: records.rows[i].email,
+      phone: records.rows[i].phone
     }
 
     students.push(student);
@@ -787,7 +789,8 @@ async function getStudent(studentId) {
   SELECT
     student_id,
     email,
-    CONCAT_WS(' ', first_name, last_name) AS full_name 
+    CONCAT_WS(' ', first_name, last_name) AS full_name,
+    phone
   FROM 
     students
   WHERE 
@@ -800,7 +803,8 @@ async function getStudent(studentId) {
   return {
     id: record.rows[0].student_id,
     email: record.rows[0].email,
-    fullName: record.rows[0].full_name
+    fullName: record.rows[0].full_name,
+    phone: record.rows[0].phone
   };
 }
 
@@ -890,14 +894,43 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const sms = twilio(accountSid, authToken);
 
-async function createMessage() {
-  const message = await sms.messages.create({
-    body: "This is the ship that made the Kessel Run in fourteen parsecs?",
-    from: "+18776981396",
-    to: "+15403836696",
+const reminderJob = new cron.CronJob(
+	'0 0 17 * * *',      // cronTime
+	function() {          // onTick
+    remindStudents();
+  }, 
+	null,                 // onComplete
+	true,                 // start
+	'America/New_York',    // timeZone
+  null,
+  true
+);
+
+async function remindStudents() {
+  // Get phone numbers for students who haven't logged yet today.
+  const sql = `
+    SELECT 
+      s.first_name as name,
+      s.phone
+    FROM students s
+    WHERE 
+      s.phone IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM practice_records pr
+        WHERE pr.student = s.student_id
+        AND pr.practice_date = CURRENT_DATE
+      )
+    ;
+  `;
+  const records = await pool.query(sql);
+
+  // Text each one asking if they've practiced.
+  records.rows.forEach(student => {
+    sms.messages.create({
+      body: `χαῖρε, ${student.name}! ἄσκηκας σήμερον;`,
+      from: "+18776981396",
+      to: student.phone,
+    });
   });
-
-   console.log(message.body);
 }
-
-createMessage();
