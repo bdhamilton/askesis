@@ -879,3 +879,24 @@ const job = new cron.CronJob(
   null,
   true
 );
+
+/**
+ * SEND SMS TO STUDENTS
+ */
+const twilio = require("twilio");
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const sms = twilio(accountSid, authToken);
+
+async function createMessage() {
+  const message = await sms.messages.create({
+    body: "This is the ship that made the Kessel Run in fourteen parsecs?",
+    from: "+18776981396",
+    to: "+15403836696",
+  });
+
+   console.log(message.body);
+}
+
+createMessage();
