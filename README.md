@@ -24,8 +24,12 @@ Next features to implement:
   * [X] It should check if the incoming number is recognized
   * [X] If recognized and not yet logged, log the practice
   * [X] If recognized and already logged, confirm update and then log the practice
-* [ ] It should follow up by asking them what they did
 * [ ] It should allow students to add or delete a phone number
+  * [ ] The registration form should allow students to enter a phone number
+    * [ ] It should format the number correctly.
+  * [ ] There should be a page where students can change their account info
+  * [ ] It should send them a text to confirm when they first add or change their number
+* [ ] It should follow up by asking them what they did
 
 ### 1.1: some teacher upgrades
 
