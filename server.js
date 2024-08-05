@@ -905,7 +905,7 @@ const reminderJob = new cron.CronJob(
 	true,                 // start
 	'America/New_York',    // timeZone
   null,
-  false                   // Run on init
+  true                   // Run on init
 );
 
 async function remindStudents() {
@@ -944,10 +944,112 @@ const { MessagingResponse } = require('twilio').twiml;
 
 async function processIncomingText(request, response) {
   const twiml = new MessagingResponse();
+  const student = await getTodaysRecordByPhoneNumber(request.body.From);
+  console.log(student);
+  console.log(request.session);
 
-  // Check if this incoming number belongs to a student, and if so,
-  // whether that student has already logged a practice for today.
-  const sqlParameters = [request.body.From];
+  // If the text didn't come from one of my students, let them know.
+  if (!student) {
+    twiml.message(`I don't know this number! If you're one of my students, log into the app and add your number to your account.`);
+    return response.type('text/xml').send(twiml.toString());
+  }
+
+  // If it did, figure out whether they said yes or no.
+  // (If I'm not sure, ask them again.)
+  let smsResponse = evaluateSMS(request.body.Body);
+
+  if (smsResponse === 'unknown') {
+    twiml.message(`I didn't catch that! Please respond with either ναί or οὐχί.`);
+    return response.type('text/xml').send(twiml.toString());
+  }
+
+  // Are we confirming an update?
+  if (request.session.askedForConfirmation === true) {
+    // If they say they don't want to update, quit.
+    if (smsResponse === false) {
+      request.session.askedForConfirmation = false;  // reset confirmation flag
+      twiml.message(`Okay, I'll leave it alone.`);
+      return response.type('text/xml').send(twiml.toString());
+
+    // If they say they do want to update, do it.
+    } else {
+      twiml.message(`Okay, I'll update it!`);
+      updatePracticeSession(student.id, request.session.savedSmsResponse);
+      request.session.askedForConfirmation = false; // reset confirmation flag
+      request.session.savedSmsResponse = undefined;
+      return response.type('text/xml').send(twiml.toString());
+    }
+  }
+
+  // Has the student logged something today already?
+  if (student.hasLogged) {
+    // If they're confirming something they've already logged, ignore it.
+    if (student.hasPracticed === smsResponse) {
+      twiml.message(`You already told me that!`);
+      return response.type('text/xml').send(twiml.toString());
+
+    // If they're telling me something new, confirm before we update.
+    } else {
+      request.session.savedSmsResponse = smsResponse;
+      request.session.askedForConfirmation = true;  // set confirmation flag
+      setTimeout(() => {
+        request.session.askedForConfirmation = false;
+        request.session.savedSmsResponse = undefined;
+      }, 300000);
+
+      twiml.message(`That's not what you told me before! Do you want to update your log?`);
+      return response.type('text/xml').send(twiml.toString());
+    }
+  }
+
+  // If the student has _not_ logged a practice session, log it.
+  if (smsResponse === true) {
+    twiml.message(`καλῶς, ${student.name}!`);
+    addPracticeSession(student.id, true);
+  } else {
+    twiml.message('φεῦ! αὔριον πείρα!');
+    addPracticeSession(student.id, false);
+  }
+
+  return response.type('text/xml').send(twiml.toString());
+}
+
+async function addPracticeSession(student, hasPracticed, note, practiceDate) {
+  const hasPracticedFormatted = hasPracticed ? 't' : 'f';
+  const practiceDateFormatted = practiceDate ? practiceDate : formatDate(new Date());
+
+  const params = [student, practiceDateFormatted, note, hasPracticedFormatted];
+  const sql = `
+    INSERT INTO practice_records
+      (student, practice_date, note, has_practiced)
+    VALUES
+      (($1), ($2), ($3), ($4));      
+  `;
+  pool.query(sql, params);
+}
+
+async function updatePracticeSession(student, hasPracticed) {
+  const hasPracticedFormatted = hasPracticed ? 't' : 'f';
+  const practiceDateFormatted = formatDate(new Date());
+
+  const params = [student, practiceDateFormatted, hasPracticedFormatted];
+  console.log(params);
+
+  const sql = `
+    UPDATE practice_records
+    SET
+      has_practiced = $3
+    WHERE
+      student = $1 AND
+      practice_date = $2;
+  `;
+
+  pool.query(sql, params);
+}
+
+async function getTodaysRecordByPhoneNumber(phone) {
+  // Grab the relevant info from database
+  const sqlParameters = [phone];
   const sql = `
     SELECT
       s.student_id as id,
@@ -965,65 +1067,41 @@ async function processIncomingText(request, response) {
         practice_date = CURRENT_DATE
     ) pr ON s.student_id = pr.student
     WHERE
-      s.phone = ($1)
+      s.phone = $1
   ;`;
-
   const records = await pool.query(sql, sqlParameters);
 
   // If there's no student at this number, send an appropriate response.
   if (records.rows.length === 0) {
-    twiml.message(`I don't know this number! If you're one of my students, log into the app and add your number to your account.`);
-    response.type('text/xml').send(twiml.toString());
-    return;
+    return null;
   }
 
-  // If there is, grab the student's information.
+  // If there is, grab the student's information...
   const student = records.rows[0];
-  student.hasLogged = student.hasPracticed === null ? false : true;
-  console.log(student);
+  student.hasLogged = student.hasPracticed === null ? false : true;  
 
-  // If the student has already logged a practice session, let them know.
-  if (student.hasLogged) {
-    twiml.message(`You've already logged today!`);
-    response.type('text/xml').send(twiml.toString());
-    return;
-  }
-  
-  // Format incoming responses
-  function stripDiacritics(text) {
-    return text.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-  }
-  let textReply = stripDiacritics(request.body.Body).toLowerCase();
+  return student;
+}
 
-  // Define yes and no replies
+function evaluateSMS(message) {
+  // Strip diacritics
+  formattedMessage = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Make lowercase
+  formattedMessage = formattedMessage.toLowerCase();
+
+  // Define yes or no values
   const yesReplies = ["yes", "y", "ναι", "ν"];
   const noReplies = ["no", "n", "ου", "ουχι", "ο"];
 
-  // Reply in the appropriate way
-  if (yesReplies.includes(textReply)) {
-    twiml.message(`καλῶς, ${student.name}!`);
-    addPracticeSession(student.id, true);
-  } else if (noReplies.includes(textReply)) {
-    twiml.message('φεῦ! αὔριον πείρα!');
-    addPracticeSession(student.id, false);
+  let messageSaysYes;
+  if (yesReplies.includes(formattedMessage)) {
+    messageSaysYes = true;
+  } else if (noReplies.includes(formattedMessage)) {
+    messageSaysYes = false;
   } else {
-    twiml.message(`I didn't catch that! Please respond with either ναί or οὐχί.`);
+    messageSaysYes = 'unknown';
   }
 
-  // Send the message
-  response.type('text/xml').send(twiml.toString());
-}
-
-async function addPracticeSession(student, hasPracticed, note, practiceDate) {
-  const hasPracticedFormatted = hasPracticed ? 't' : 'f';
-  const practiceDateFormatted = practiceDate ? practiceDate : formatDate(new Date());
-
-  const params = [student, practiceDateFormatted, note, hasPracticedFormatted];
-  const sql = `
-    INSERT INTO practice_records
-      (student, practice_date, note, has_practiced)
-    VALUES
-      (($1), ($2), ($3), ($4));      
-  `;
-  pool.query(sql, params);
+  return messageSaysYes;
 }
