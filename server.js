@@ -950,9 +950,9 @@ async function processIncomingText(request, response) {
   const sqlParameters = [request.body.From];
   const sql = `
     SELECT
-      s.student_id,
+      s.student_id as id,
       s.first_name as name,
-      pr.has_practiced,
+      pr.has_practiced as "hasPracticed",
       pr.note
     FROM students s
     LEFT JOIN (
@@ -979,6 +979,15 @@ async function processIncomingText(request, response) {
 
   // If there is, grab the student's information.
   const student = records.rows[0];
+  student.hasLogged = student.hasPracticed === null ? false : true;
+  console.log(student);
+
+  // If the student has already logged a practice session, let them know.
+  if (student.hasLogged) {
+    twiml.message(`You've already logged today!`);
+    response.type('text/xml').send(twiml.toString());
+    return;
+  }
   
   // Format incoming responses
   function stripDiacritics(text) {
@@ -992,14 +1001,29 @@ async function processIncomingText(request, response) {
 
   // Reply in the appropriate way
   if (yesReplies.includes(textReply)) {
-    
     twiml.message(`καλῶς, ${student.name}!`);
+    addPracticeSession(student.id, true);
   } else if (noReplies.includes(textReply)) {
-    twiml.message('φεῦ! αὔριον πείρα!')
+    twiml.message('φεῦ! αὔριον πείρα!');
+    addPracticeSession(student.id, false);
   } else {
     twiml.message(`I didn't catch that! Please respond with either ναί or οὐχί.`);
   }
 
   // Send the message
   response.type('text/xml').send(twiml.toString());
+}
+
+async function addPracticeSession(student, hasPracticed, note, practiceDate) {
+  const hasPracticedFormatted = hasPracticed ? 't' : 'f';
+  const practiceDateFormatted = practiceDate ? practiceDate : formatDate(new Date());
+
+  const params = [student, practiceDateFormatted, note, hasPracticedFormatted];
+  const sql = `
+    INSERT INTO practice_records
+      (student, practice_date, note, has_practiced)
+    VALUES
+      (($1), ($2), ($3), ($4));      
+  `;
+  pool.query(sql, params);
 }
