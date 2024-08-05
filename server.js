@@ -968,12 +968,14 @@ async function processIncomingText(request, response) {
     // If they say they don't want to update, quit.
     if (smsResponse === false) {
       request.session.askedForConfirmation = false;  // reset confirmation flag
-      twiml.message(`Okay, I'll leave it alone.`);
+      const msg = student.hasPracticed ? "did" : "did not";
+      twiml.message(`Okay, I'll leave it alone. Your log still says that you ${msg} practice today.`);
       return response.type('text/xml').send(twiml.toString());
 
     // If they say they do want to update, do it.
     } else {
-      twiml.message(`Okay, I'll update it!`);
+      const msg = request.session.savedSmsResponse ? "did" : "did not";
+      twiml.message(`Okay, I'll update it! Your log now says that you ${msg} practice today.`);
       updatePracticeSession(student.id, request.session.savedSmsResponse);
       request.session.askedForConfirmation = false; // reset confirmation flag
       request.session.savedSmsResponse = undefined;
@@ -985,7 +987,7 @@ async function processIncomingText(request, response) {
   if (student.hasLogged) {
     // If they're confirming something they've already logged, ignore it.
     if (student.hasPracticed === smsResponse) {
-      twiml.message(`You already told me that!`);
+      twiml.message(`ἤδη οἶδα!`);
       return response.type('text/xml').send(twiml.toString());
 
     // If they're telling me something new, confirm before we update.
@@ -993,11 +995,16 @@ async function processIncomingText(request, response) {
       request.session.savedSmsResponse = smsResponse;
       request.session.askedForConfirmation = true;  // set confirmation flag
       setTimeout(() => {
-        request.session.askedForConfirmation = false;
         request.session.savedSmsResponse = undefined;
+        request.session.askedForConfirmation = false;
       }, 300000);
 
-      twiml.message(`That's not what you told me before! Do you want to update your log?`);
+      if (smsResponse === true) {
+        twiml.message(`You told me before that you hadn't practiced today. Do you want me to update your log to say that you did?`);
+      } else {
+        twiml.message(`You told me before that you had practiced today. Do you want me to update your log to say that you didn't?`);
+      }
+
       return response.type('text/xml').send(twiml.toString());
     }
   }
