@@ -352,8 +352,8 @@ app.post('/register', function(request, response, next) {
     }
     
     // Format and validate the phone number before adding it to the database.
-    const cell = phone(cellNumber, { country: 'USA'});
-    const cellNumber = cell.isValid ? cell.phoneNumber : '';
+    const cell = phone(request.body.cellNumber, { country: 'USA'});
+
     // TODO: Validate email address, too.
     // TODO: If either phone or email is invalid, quit and redirect to register.
 
@@ -365,7 +365,7 @@ app.post('/register', function(request, response, next) {
       (($1), ($2), ($3), ($4), ($5), ($6))
     RETURNING student_id;
     `;
-    const sqlParams = [request.body.firstName, request.body.lastName, request.body.email, hashedPassword, salt, cellNumber];
+    const sqlParams = [request.body.firstName, request.body.lastName, request.body.email, hashedPassword, salt, cell.phoneNumber];
 
     // Run sql query
     pool.query(sql, sqlParams, function(error, result) {
@@ -913,7 +913,7 @@ const reminderJob = new cron.CronJob(
 	true,                 // start
 	'America/New_York',    // timeZone
   null,
-  true                   // Run on init
+  false                   // Run on init
 );
 
 async function remindStudents() {
