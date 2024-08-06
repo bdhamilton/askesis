@@ -449,6 +449,19 @@ REGISTRATION AND LOGIN
   padding: 0.25em 1em;
 }
 
+.entryform .note {
+  font-size: 0.85em;
+}
+
+.entryform .error {
+  font-family: 'Consolas', monospace;
+  font-size: 0.6rem;
+  margin: 0.3em 0;
+  font-weight: bold;
+  color: red;
+  display: none;
+}
+
 .help a {
   color: var(--good-dark);
 }

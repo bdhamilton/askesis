@@ -19,6 +19,8 @@ app.use(express.static(__dirname + '/static'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const {phone} = require('phone');
+
 // Set up Postgres
 const pg = require("pg");
 const pool = new pg.Pool({
@@ -348,16 +350,22 @@ app.post('/register', function(request, response, next) {
     if (error) { 
       return next(error);
     }
+    
+    // Format and validate the phone number before adding it to the database.
+    const cell = phone(cellNumber, { country: 'USA'});
+    const cellNumber = cell.isValid ? cell.phoneNumber : '';
+    // TODO: Validate email address, too.
+    // TODO: If either phone or email is invalid, quit and redirect to register.
 
     // Define SQL query to save new user in Users table
     const sql = `
     INSERT INTO students 
-      (first_name, last_name, email, hashed_password, salt)
+      (first_name, last_name, email, hashed_password, salt, phone)
     VALUES 
-      (($1), ($2), ($3), ($4), ($5))
+      (($1), ($2), ($3), ($4), ($5), ($6))
     RETURNING student_id;
     `;
-    const sqlParams = [request.body.firstName, request.body.lastName, request.body.email, hashedPassword, salt];
+    const sqlParams = [request.body.firstName, request.body.lastName, request.body.email, hashedPassword, salt, cellNumber];
 
     // Run sql query
     pool.query(sql, sqlParams, function(error, result) {
