@@ -20,6 +20,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 const {phone} = require('phone');
+var phoneFormatter = require('phone-formatter');
 
 // Set up Postgres
 const pg = require("pg");
@@ -130,8 +131,11 @@ passport.use(new LocalStrategy(function verify(email, password, callback) {
 
 // Maintain login sessions
 passport.serializeUser(function(student, callback) {
+  console.log(student.phone);
+  console.log(phoneFormatter.format(student.phone, '(NNN) NNN-NNNN'));
+
   // Save an object with the student's id and username
-  callback(null, { id: student.student_id, firstName: student.first_name, email: student.email });
+  callback(null, { id: student.student_id, firstName: student.first_name, lastName: student.last_name, email: student.email, phone: phoneFormatter.format(student.phone, '(NNN) NNN-NNNN') });
 });
 
 passport.deserializeUser(function(student, callback) {
@@ -210,6 +214,16 @@ app.get("/", async function(request, response) {
   const recentPractice = await getRecent(student.id);
   const calendar = await getCalendar(student.id);
   response.render("student", { week, recentPractice, calendar, student });
+});
+
+app.get("/account/", async function(request, response) {
+  // If user is not logged in, redirect to login page.
+  if (!request.isAuthenticated()) {
+    return response.redirect('/login');
+  }
+
+  const student = request.user;
+  response.render("account", { student });
 });
 
 // Serve calendar from a specific month
@@ -376,7 +390,7 @@ app.post('/register', function(request, response, next) {
       // Create student object with necessary information
       // (Use keys that match database columns, so we don't have to deal
       // with naming conflicts during login.)
-      const student = { student_id: result.rows[0].student_id, first_name: request.body.firstName, email: request.body.email };
+      const student = { student_id: result.rows[0].student_id, first_name: request.body.firstName, last_name: request.body.lastName, email: request.body.email, phone: request.body.phone };
 
       // Send myself a message letting me know that someone registered
       const message = {
