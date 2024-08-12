@@ -1,3 +1,5 @@
 node_modules/
 .env
 .well-known/
+planning/
+journal.md
