@@ -382,18 +382,19 @@ footer {
   margin-top: 1rem;
   padding: 1rem 0;
   max-width: 60ch;
+
+  text-align: right;
 }
 
 .logoutForm {
-  float: right;
   font-size: 0.8rem;
-  margin-top: 0.5rem;
 }
 
 .logoutForm button {
   border: 1px solid var(--darkgray);
   background-color: var(--lightgray);
   color: black;
+  margin-left: 0.5rem;
 }
 
 /**
