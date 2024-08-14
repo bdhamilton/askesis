@@ -19,7 +19,7 @@ app.use(express.static(__dirname + '/static'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-const {phone} = require('phone');
+const { phone } = require('phone');
 var phoneFormatter = require('phone-formatter');
 
 // Set up Postgres
@@ -131,11 +131,10 @@ passport.use(new LocalStrategy(function verify(email, password, callback) {
 
 // Maintain login sessions
 passport.serializeUser(function(student, callback) {
-  console.log(student.phone);
-  console.log(phoneFormatter.format(student.phone, '(NNN) NNN-NNNN'));
+  let formattedPhone = phoneFormatter.format(student.phone, '(NNN) NNN-NNNN');
 
   // Save an object with the student's id and username
-  callback(null, { id: student.student_id, firstName: student.first_name, lastName: student.last_name, email: student.email, phone: phoneFormatter.format(student.phone, '(NNN) NNN-NNNN') });
+  callback(null, { id: student.student_id, firstName: student.first_name, lastName: student.last_name, email: student.email, phone: formattedPhone });
 });
 
 passport.deserializeUser(function(student, callback) {
@@ -216,7 +215,7 @@ app.get("/", async function(request, response) {
   response.render("student", { week, recentPractice, calendar, student });
 });
 
-app.get("/account/", async function(request, response) {
+app.get("/account", async function(request, response) {
   // If user is not logged in, redirect to login page.
   if (!request.isAuthenticated()) {
     return response.redirect('/login');

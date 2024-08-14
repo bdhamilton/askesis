@@ -22,6 +22,8 @@
   </header>
 
   <main>
+    <p>Here’s the information I have on file for you:</p>
+
     <form method="POST" action="/account" class="entryform" lang="en">
       <div>
         <label for="firstName">First Name</label>
@@ -40,7 +42,7 @@
 
       <div>
         <label for="cellNumber">Cell Number</label>
-        <input type="tel" name="cellNumber" value="<% student.phone %>"></input>
+        <input type="tel" name="cellNumber" value="<%= student.phone %>"></input>
         <p class="note">* If you enter a cell number, I will text you to remind you to log your practice sessions.</p>
       </div>
       
