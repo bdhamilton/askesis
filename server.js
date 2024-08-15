@@ -865,7 +865,14 @@ async function getStudentList() {
     students
   ORDER BY last_name;
   `;
-  const records = await pool.query(sql);
+
+  let records;
+  try {
+    records = await pool.query(sql);
+  } catch (error) {
+    console.error('Error fetching student list:', error);
+    return [];
+  }
 
   // Build an array of all students
   const students = [];
