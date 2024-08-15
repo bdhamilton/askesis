@@ -87,7 +87,8 @@ const crypto = require('crypto');
 app.use(session({
   secret: process.env.SESSION_SECRET, // random string used to authenticate a session
   resave: false, // don't save session if unchanged
-  saveUninitialized: false // don't create session until something stored
+  saveUninitialized: false, // don't create session until something stored
+  cookie: { maxAge: 14 * 24 * 60 * 60 * 1000 } // 2 weeks
 }));
 
 // Run passport.authenticate('session') on every request
