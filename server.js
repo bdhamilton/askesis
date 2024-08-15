@@ -144,21 +144,36 @@ passport.deserializeUser(function(student, callback) {
 
 // Serve main teacher page
 app.get("/teacher", async function(request, response) {
-  // Only allow access if _I_ am logged in.
-  if (!request.isAuthenticated() || request.user.email !== 'bdhamilton@gmail.com') {
-    return response.redirect('/login');
+  try {
+    // Only allow access if _I_ am logged in.
+    if (!request.isAuthenticated() || request.user.email !== 'bdhamilton@gmail.com') {
+      return response.redirect('/login');
+    }
+
+    // Get a list of all students
+    let students;
+    try {
+      students = await getStudentList();
+    } catch (error) {
+      console.error('Error fetching student list:', error);
+      return response.status(500).send('Error fetching student list');
+    }
+
+    // For each student:
+    for (let i = 0; i < students.length; i++) {
+      try {
+        students[i].week = await getWeek(students[i].id);
+      } catch (error) {
+        console.error(`Error fetching week data for student ID ${students[i].id}:`, error);
+        return response.status(500).send(`Error fetching week data for student ID ${students[i].id}`);
+      }
+    }
+
+    response.render("teacher", { students });
+  } catch (error) {
+    console.error('Error fetching teacher data:', error);
+    response.status(500).send('Internal Server Error');
   }
-
-  // Get a list of all students
-  const students = await getStudentList();
-
-  // For each student:
-  for (let i = 0; i < students.length; i++) {
-
-    students[i].week = await getWeek(students[i].id);
-  }
-
-  response.render("teacher", { students });
 });
 
 // Get current information about a particular student
