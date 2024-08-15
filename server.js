@@ -868,7 +868,10 @@ async function getStudentList() {
 
   let records;
   try {
+    console.log('Connecting to the database...');
+    console.log('Running SQL query: ', sql);
     records = await pool.query(sql);
+    console.log('Query complete.');
   } catch (error) {
     console.error('Error fetching student list:', error);
     return [];
