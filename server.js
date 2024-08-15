@@ -19,6 +19,9 @@ app.use(express.static(__dirname + '/static'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+const { phone } = require('phone');
+var phoneFormatter = require('phone-formatter');
+
 // Set up Postgres
 const pg = require("pg");
 const pool = new pg.Pool({
@@ -36,52 +39,6 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Set up cron job to email teacher daily
-const cron = require('cron');
-
-async function sendWeeklySummary() {
-  // Get a list of all students
-  const students = await getStudentList();
-
-  // For each student:
-  for (let i = 0; i < students.length; i++) {
-    students[i].week = await getWeek(students[i].id);
-  }
-
-  let summary = '';
-  for (let student of students) {
-    summary += `<p>${student.fullName}: ${student.week.count} of last 7 days (trending ${student.week.trend})</p>\n`;
-  }
-  summary += `<p><a href="https://askesis.hmltn.dev/teacher/">View all</a></p>`;
-
-  const message = {
-    from: "Askesis <bdhamilton@gmail.com>",
-    to: "bdhamilton@gmail.com",
-    subject: "Student practice summary",
-    html: summary,
-  };
-
-  transporter.sendMail(message, (error, info) => {
-    if (error) {
-      return console.log(error);
-    }
-  });
-}
-
-const job = new cron.CronJob(
-	'0 0 9 * * 2,4',      // cronTime
-	function() {          // onTick
-    sendWeeklySummary();
-  }, 
-	null,                 // onComplete
-	true,                 // start
-	'America/New_York',    // timeZone
-  null,
-  true
-);
-
-
-
 // Create database tables
 pool.query(`
 CREATE TABLE IF NOT EXISTS
@@ -90,6 +47,7 @@ CREATE TABLE IF NOT EXISTS
     first_name TEXT,
     last_name TEXT,
     email TEXT UNIQUE,
+    phone TEXT UNIQUE,
     hashed_password BYTEA,
     salt BYTEA
   );
@@ -173,8 +131,10 @@ passport.use(new LocalStrategy(function verify(email, password, callback) {
 
 // Maintain login sessions
 passport.serializeUser(function(student, callback) {
+  let formattedPhone = student.phone ? phoneFormatter.format(student.phone, '(NNN) NNN-NNNN') : null;
+
   // Save an object with the student's id and username
-  callback(null, { id: student.student_id, firstName: student.first_name, email: student.email });
+  callback(null, { id: student.student_id, firstName: student.first_name, lastName: student.last_name, email: student.email, phone: formattedPhone });
 });
 
 passport.deserializeUser(function(student, callback) {
@@ -239,6 +199,8 @@ app.get("/teacher/:student_id/:year/:month/:day", async function(request, respon
   response.render("teacher-detail", { calendar, week, student, todaysRecord });
 });
 
+app.post('/sms', processIncomingText);
+
 // Serve main student page
 app.get("/", async function(request, response) {
   // If user is not logged in, redirect to login page.
@@ -251,6 +213,78 @@ app.get("/", async function(request, response) {
   const recentPractice = await getRecent(student.id);
   const calendar = await getCalendar(student.id);
   response.render("student", { week, recentPractice, calendar, student });
+});
+
+app.get("/account", async function(request, response) {
+  // If user is not logged in, redirect to login page.
+  if (!request.isAuthenticated()) {
+    return response.redirect('/login');
+  }
+
+  const student = request.user;
+  response.render("account", { student });
+});
+
+app.post("/account", async function(request, response) {
+  // Gather parameters for account update
+  const cell = phone(request.body.cellNumber, { country: 'USA'});
+  const sqlParameters = [
+    request.user.id, 
+    request.body.firstName, 
+    request.body.lastName, 
+    request.body.email, 
+    cell.phoneNumber
+  ];
+
+  // Base SQL query
+  let updateSql = `
+  UPDATE students
+  SET
+    first_name = $2,
+    last_name = $3,
+    email = $4,
+    phone = $5
+  `;
+
+  // If the user is updating a password, add that data.
+  if (request.body.password) {
+    const salt = crypto.randomBytes(16);
+    const hashedPassword = crypto.pbkdf2Sync(request.body.password, salt, 310000, 32, 'sha256');
+    updateSql += `,
+      salt = $6,
+      hashed_password = $7
+    `;
+    sqlParameters.push(salt, hashedPassword);
+  }
+  
+  // Write the SQL query.
+  updateSql += `
+    WHERE
+      student_id = $1
+  ;`;
+  
+  // Update the database and the session data
+  try {
+    await pool.query(updateSql, sqlParameters);
+
+    // Retrieve the updated user data
+    const result = await pool.query('SELECT * FROM students WHERE student_id = $1', [request.user.id]);
+    const updatedUser = result.rows[0];
+
+    // Update session data using Passport
+    request.login(updatedUser, function(err) {
+      if (err) {
+        console.error('Error updating session:', err);
+        return response.status(500).send('Internal Server Error');
+      }
+
+      // Send back to account page
+      response.redirect('/account');
+    });
+  } catch (error) {
+    console.error('Error updating account:', error);
+    response.status(500).send('Internal Server Error');
+  }
 });
 
 // Serve calendar from a specific month
@@ -391,16 +425,22 @@ app.post('/register', function(request, response, next) {
     if (error) { 
       return next(error);
     }
+    
+    // Format and validate the phone number before adding it to the database.
+    const cell = phone(request.body.cellNumber, { country: 'USA'});
+
+    // TODO: Validate email address, too.
+    // TODO: If either phone or email is invalid, quit and redirect to register.
 
     // Define SQL query to save new user in Users table
     const sql = `
     INSERT INTO students 
-      (first_name, last_name, email, hashed_password, salt)
+      (first_name, last_name, email, hashed_password, salt, phone)
     VALUES 
-      (($1), ($2), ($3), ($4), ($5))
+      (($1), ($2), ($3), ($4), ($5), ($6))
     RETURNING student_id;
     `;
-    const sqlParams = [request.body.firstName, request.body.lastName, request.body.email, hashedPassword, salt];
+    const sqlParams = [request.body.firstName, request.body.lastName, request.body.email, hashedPassword, salt, cell.phoneNumber];
 
     // Run sql query
     pool.query(sql, sqlParams, function(error, result) {
@@ -411,7 +451,7 @@ app.post('/register', function(request, response, next) {
       // Create student object with necessary information
       // (Use keys that match database columns, so we don't have to deal
       // with naming conflicts during login.)
-      const student = { student_id: result.rows[0].student_id, first_name: request.body.firstName, email: request.body.email };
+      const student = { student_id: result.rows[0].student_id, first_name: request.body.firstName, last_name: request.body.lastName, email: request.body.email, phone: request.body.phone };
 
       // Send myself a message letting me know that someone registered
       const message = {
@@ -804,7 +844,8 @@ async function getStudentList() {
   SELECT 
     student_id,
     email,
-    CONCAT_WS(' ', first_name, last_name) AS full_name
+    CONCAT_WS(' ', first_name, last_name) AS full_name,
+    phone
   FROM 
     students
   ORDER BY last_name;
@@ -817,7 +858,8 @@ async function getStudentList() {
     const student = {
       id: records.rows[i].student_id,
       fullName: records.rows[i].full_name,
-      email: records.rows[i].email
+      email: records.rows[i].email,
+      phone: records.rows[i].phone
     }
 
     students.push(student);
@@ -832,7 +874,8 @@ async function getStudent(studentId) {
   SELECT
     student_id,
     email,
-    CONCAT_WS(' ', first_name, last_name) AS full_name 
+    CONCAT_WS(' ', first_name, last_name) AS full_name,
+    phone
   FROM 
     students
   WHERE 
@@ -845,7 +888,8 @@ async function getStudent(studentId) {
   return {
     id: record.rows[0].student_id,
     email: record.rows[0].email,
-    fullName: record.rows[0].full_name
+    fullName: record.rows[0].full_name,
+    phone: record.rows[0].phone
   };
 }
 
@@ -876,4 +920,278 @@ function formatDateStringAsUrl(date) {
   }
 
   return dateUrl;
+}
+
+/**
+ * TEACHER EMAIL NOTIFICATIONS
+ */
+
+// Set up cron job to email teacher daily
+const cron = require('cron');
+
+async function sendWeeklySummary() {
+  // Get a list of all students
+  const students = await getStudentList();
+
+  // For each student:
+  for (let i = 0; i < students.length; i++) {
+    students[i].week = await getWeek(students[i].id);
+  }
+
+  let summary = '';
+  for (let student of students) {
+    summary += `<p>${student.fullName}: ${student.week.count} of last 7 days (trending ${student.week.trend})</p>\n`;
+  }
+  summary += `<p><a href="https://askesis.hmltn.dev/teacher/">View all</a></p>`;
+
+  const message = {
+    from: "Askesis <bdhamilton@gmail.com>",
+    to: "bdhamilton@gmail.com",
+    subject: "Student practice summary",
+    html: summary,
+  };
+
+  transporter.sendMail(message, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+  });
+}
+
+const job = new cron.CronJob(
+	'0 0 9 * * 2,4',      // cronTime
+	function() {          // onTick
+    sendWeeklySummary();
+  }, 
+	null,                 // onComplete
+	true,                 // start
+	'America/New_York',    // timeZone
+  null,
+  false                   // fire on init
+);
+
+/**
+ * SEND SMS TO STUDENTS
+ */
+const twilio = require("twilio");
+
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const sms = twilio(accountSid, authToken);
+
+const reminderJob = new cron.CronJob(
+	'0 0 17 * * *',      // cronTime
+	function() {          // onTick
+    remindStudents();
+  }, 
+	null,                 // onComplete
+	true,                 // start
+	'America/New_York',    // timeZone
+  null,
+  false                   // Run on init
+);
+
+async function remindStudents() {
+  // Get phone numbers for students who haven't logged yet today.
+  const sql = `
+    SELECT 
+      s.first_name as name,
+      s.phone
+    FROM students s
+    WHERE 
+      s.phone IS NOT NULL
+      AND NOT EXISTS (
+        SELECT 1
+        FROM practice_records pr
+        WHERE pr.student = s.student_id
+        AND pr.practice_date = CURRENT_DATE
+      )
+    ;
+  `;
+  const records = await pool.query(sql);
+
+  // Text each one asking if they've practiced.
+  records.rows.forEach(student => {
+    sms.messages.create({
+      body: `χαῖρε, ${student.name}! ἄσκηκας σήμερον;`,
+      from: "+18776981396",
+      to: student.phone,
+    });
+  });
+}
+
+/**
+ * RECEIVE REPLIES FROM STUDENTS
+ */
+const { MessagingResponse } = require('twilio').twiml;
+
+async function processIncomingText(request, response) {
+  const twiml = new MessagingResponse();
+  const student = await getTodaysRecordByPhoneNumber(request.body.From);
+  console.log(student);
+  console.log(request.session);
+
+  // If the text didn't come from one of my students, let them know.
+  if (!student) {
+    twiml.message(`I don't know this number! If you're one of my students, log into the app and add your number to your account.`);
+    return response.type('text/xml').send(twiml.toString());
+  }
+
+  // If it did, figure out whether they said yes or no.
+  // (If I'm not sure, ask them again.)
+  let smsResponse = evaluateSMS(request.body.Body);
+
+  if (smsResponse === 'unknown') {
+    twiml.message(`I didn't catch that! Please respond with either ναί or οὐχί.`);
+    return response.type('text/xml').send(twiml.toString());
+  }
+
+  // Are we confirming an update?
+  if (request.session.askedForConfirmation === true) {
+    // If they say they don't want to update, quit.
+    if (smsResponse === false) {
+      request.session.askedForConfirmation = false;  // reset confirmation flag
+      const msg = student.hasPracticed ? "did" : "did not";
+      twiml.message(`Okay, I'll leave it alone. Your log still says that you ${msg} practice today.`);
+      return response.type('text/xml').send(twiml.toString());
+
+    // If they say they do want to update, do it.
+    } else {
+      const msg = request.session.savedSmsResponse ? "did" : "did not";
+      twiml.message(`Okay, I'll update it! Your log now says that you ${msg} practice today.`);
+      updatePracticeSession(student.id, request.session.savedSmsResponse);
+      request.session.askedForConfirmation = false; // reset confirmation flag
+      request.session.savedSmsResponse = undefined;
+      return response.type('text/xml').send(twiml.toString());
+    }
+  }
+
+  // Has the student logged something today already?
+  if (student.hasLogged) {
+    // If they're confirming something they've already logged, ignore it.
+    if (student.hasPracticed === smsResponse) {
+      twiml.message(`ἤδη οἶδα!`);
+      return response.type('text/xml').send(twiml.toString());
+
+    // If they're telling me something new, confirm before we update.
+    } else {
+      request.session.savedSmsResponse = smsResponse;
+      request.session.askedForConfirmation = true;  // set confirmation flag
+      setTimeout(() => {
+        request.session.savedSmsResponse = undefined;
+        request.session.askedForConfirmation = false;
+      }, 300000);
+
+      if (smsResponse === true) {
+        twiml.message(`You told me before that you hadn't practiced today. Do you want me to update your log to say that you did?`);
+      } else {
+        twiml.message(`You told me before that you had practiced today. Do you want me to update your log to say that you didn't?`);
+      }
+
+      return response.type('text/xml').send(twiml.toString());
+    }
+  }
+
+  // If the student has _not_ logged a practice session, log it.
+  if (smsResponse === true) {
+    twiml.message(`καλῶς, ${student.name}!`);
+    addPracticeSession(student.id, true);
+  } else {
+    twiml.message('φεῦ! αὔριον πείρα!');
+    addPracticeSession(student.id, false);
+  }
+
+  return response.type('text/xml').send(twiml.toString());
+}
+
+async function addPracticeSession(student, hasPracticed, note, practiceDate) {
+  const hasPracticedFormatted = hasPracticed ? 't' : 'f';
+  const practiceDateFormatted = practiceDate ? practiceDate : formatDate(new Date());
+
+  const params = [student, practiceDateFormatted, note, hasPracticedFormatted];
+  const sql = `
+    INSERT INTO practice_records
+      (student, practice_date, note, has_practiced)
+    VALUES
+      (($1), ($2), ($3), ($4));      
+  `;
+  pool.query(sql, params);
+}
+
+async function updatePracticeSession(student, hasPracticed) {
+  const hasPracticedFormatted = hasPracticed ? 't' : 'f';
+  const practiceDateFormatted = formatDate(new Date());
+
+  const params = [student, practiceDateFormatted, hasPracticedFormatted];
+  console.log(params);
+
+  const sql = `
+    UPDATE practice_records
+    SET
+      has_practiced = $3
+    WHERE
+      student = $1 AND
+      practice_date = $2;
+  `;
+
+  pool.query(sql, params);
+}
+
+async function getTodaysRecordByPhoneNumber(phone) {
+  // Grab the relevant info from database
+  const sqlParameters = [phone];
+  const sql = `
+    SELECT
+      s.student_id as id,
+      s.first_name as name,
+      pr.has_practiced as "hasPracticed",
+      pr.note
+    FROM students s
+    LEFT JOIN (
+      SELECT
+        student,
+        has_practiced,
+        note
+      FROM practice_records
+      WHERE
+        practice_date = CURRENT_DATE
+    ) pr ON s.student_id = pr.student
+    WHERE
+      s.phone = $1
+  ;`;
+  const records = await pool.query(sql, sqlParameters);
+
+  // If there's no student at this number, send an appropriate response.
+  if (records.rows.length === 0) {
+    return null;
+  }
+
+  // If there is, grab the student's information...
+  const student = records.rows[0];
+  student.hasLogged = student.hasPracticed === null ? false : true;  
+
+  return student;
+}
+
+function evaluateSMS(message) {
+  // Strip diacritics
+  formattedMessage = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+  // Make lowercase
+  formattedMessage = formattedMessage.toLowerCase();
+
+  // Define yes or no values
+  const yesReplies = ["yes", "y", "ναι", "ν"];
+  const noReplies = ["no", "n", "ου", "ουχι", "ο"];
+
+  let messageSaysYes;
+  if (yesReplies.includes(formattedMessage)) {
+    messageSaysYes = true;
+  } else if (noReplies.includes(formattedMessage)) {
+    messageSaysYes = false;
+  } else {
+    messageSaysYes = 'unknown';
+  }
+
+  return messageSaysYes;
 }

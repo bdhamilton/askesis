@@ -26,6 +26,9 @@
     "nodemailer": "^6.9.13",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
-    "pg": "^8.11.5"
+    "pg": "^8.11.5",
+    "phone": "^3.1.49",
+    "phone-formatter": "^0.0.2",
+    "twilio": "^5.2.2"
   }
 }

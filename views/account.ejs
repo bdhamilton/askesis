@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="grc">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ΑΣΚΗΣΙΣ</title>
+  <link rel="stylesheet" href="/c.css">
+
+  <meta property="og:image" content="/img/odeon.jpg">
+  <meta property="og:description" content='A practice tracker for students of ancient Greek.'>
+  <meta property="og:title" content="ΑΣΚΗΣΙΣ">
+  <meta name="title" content="ΑΣΚΗΣΙΣ">
+  <meta name="description" content='A practice tracker for students of ancient Greek.'>
+  <meta name="author" content="Brian Hamilton">
+</head>
+<body>
+  <header>
+    <h1><a href="/">Η ΑΣΚΗΣΙΣ</a></h1>
+    <p><q>πλέονες ἐξ ἀσκήσιος ἀγαθοί γίνονται ἤ ἀπὸ φύσιος.</q> <span>—Δημόκριτος</span></p>
+
+    <h2>χαῖρε, <%= student.firstName %>!</h2>
+  </header>
+
+  <main>
+    <p>Here’s the information I have on file for you:</p>
+
+    <form method="POST" action="/account" class="entryform" lang="en">
+      <div>
+        <label for="firstName">First Name</label>
+        <input type="text" name="firstName" id="firstName" value="<%= student.firstName %>" required>
+      </div>
+      
+      <div>
+        <label for="lastName">Last Name</label>
+        <input type="text" name="lastName" id="lastName" value="<%= student.lastName %>">
+      </div>
+
+      <div>
+        <label for="email">Email Address</label>
+        <input type="email" name="email" value="<%= student.email %>" required></input>
+      </div>
+
+      <div>
+        <label for="cellNumber">Cell Number</label>
+        <input type="tel" name="cellNumber" value="<%= student.phone %>"></input>
+        <p class="note">* If you enter a cell number, I will text you to remind you to log your practice sessions.</p>
+      </div>
+      
+      <div>
+        <label for="new-password">New Password</label>
+        <input id="new-password" name="password" type="password" autocomplete="new-password">
+        <p class="note">* Enter a new password if you want to change yours. Otherwise leave this blank.</p>
+      </div>
+      
+
+      <button type="submit">Update your information</button>
+    </form>
+  </main>
+
+  <footer>
+    <form action="/logout" method="post" class="logoutForm">
+      <button type="submit">Log out</button>
+    </form>
+  </footer>
+</body>
+</html>
