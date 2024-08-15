@@ -131,7 +131,7 @@ passport.use(new LocalStrategy(function verify(email, password, callback) {
 
 // Maintain login sessions
 passport.serializeUser(function(student, callback) {
-  let formattedPhone = phoneFormatter.format(student.phone, '(NNN) NNN-NNNN');
+  let formattedPhone = student.phone ? phoneFormatter.format(student.phone, '(NNN) NNN-NNNN') : null;
 
   // Save an object with the student's id and username
   callback(null, { id: student.student_id, firstName: student.first_name, lastName: student.last_name, email: student.email, phone: formattedPhone });
@@ -223,6 +223,68 @@ app.get("/account", async function(request, response) {
 
   const student = request.user;
   response.render("account", { student });
+});
+
+app.post("/account", async function(request, response) {
+  // Gather parameters for account update
+  const cell = phone(request.body.cellNumber, { country: 'USA'});
+  const sqlParameters = [
+    request.user.id, 
+    request.body.firstName, 
+    request.body.lastName, 
+    request.body.email, 
+    cell.phoneNumber
+  ];
+
+  // Base SQL query
+  let updateSql = `
+  UPDATE students
+  SET
+    first_name = $2,
+    last_name = $3,
+    email = $4,
+    phone = $5
+  `;
+
+  // If the user is updating a password, add that data.
+  if (request.body.password) {
+    const salt = crypto.randomBytes(16);
+    const hashedPassword = crypto.pbkdf2Sync(request.body.password, salt, 310000, 32, 'sha256');
+    updateSql += `,
+      salt = $6,
+      hashed_password = $7
+    `;
+    sqlParameters.push(salt, hashedPassword);
+  }
+  
+  // Write the SQL query.
+  updateSql += `
+    WHERE
+      student_id = $1
+  ;`;
+  
+  // Update the database and the session data
+  try {
+    await pool.query(updateSql, sqlParameters);
+
+    // Retrieve the updated user data
+    const result = await pool.query('SELECT * FROM students WHERE student_id = $1', [request.user.id]);
+    const updatedUser = result.rows[0];
+
+    // Update session data using Passport
+    request.login(updatedUser, function(err) {
+      if (err) {
+        console.error('Error updating session:', err);
+        return response.status(500).send('Internal Server Error');
+      }
+
+      // Send back to account page
+      response.redirect('/account');
+    });
+  } catch (error) {
+    console.error('Error updating account:', error);
+    response.status(500).send('Internal Server Error');
+  }
 });
 
 // Serve calendar from a specific month
