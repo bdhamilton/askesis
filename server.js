@@ -19,6 +19,7 @@ app.use(express.static(__dirname + '/static'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Deal with phone numbers
 const { phone } = require('phone');
 var phoneFormatter = require('phone-formatter');
 
@@ -27,6 +28,10 @@ const pg = require("pg");
 const pool = new pg.Pool({
   connectionString: process.env.DATABASE_URL,
 });
+
+// Set up ChatGPT
+const OpenAI = require("openai");
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 // Set up nodemailer
 const nodemailer = require('nodemailer');
@@ -1054,8 +1059,6 @@ const { MessagingResponse } = require('twilio').twiml;
 async function processIncomingText(request, response) {
   const twiml = new MessagingResponse();
   const student = await getTodaysRecordByPhoneNumber(request.body.From);
-  console.log(student);
-  console.log(request.session);
 
   // If the text didn't come from one of my students, let them know.
   if (!student) {
@@ -1065,7 +1068,7 @@ async function processIncomingText(request, response) {
 
   // If it did, figure out whether they said yes or no.
   // (If I'm not sure, ask them again.)
-  let smsResponse = evaluateSMS(request.body.Body);
+  let smsResponse = askChatGPT(request.body.Body);
 
   if (smsResponse === 'unknown') {
     twiml.message(`I didn't catch that! Please respond with either ναί or οὐχί.`);
@@ -1199,25 +1202,24 @@ async function getTodaysRecordByPhoneNumber(phone) {
   return student;
 }
 
-function evaluateSMS(message) {
-  // Strip diacritics
-  formattedMessage = message.normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+// Ask ChatGPT to parse incoming texts
+async function askChatGPT(message) {
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini",
+    messages: [
+        { role: "system", content: "You assess if a student practiced based on their reply to 'Did you practice today?' in English or Greek. Reply 'yes' if they indicate practice, 'no' if not, and 'unknown' for unclear or nonsensical responses." },
+        {
+            role: "user",
+            content: `The student said "${message}". Did they practice?`,
+        },
+    ],
+  });
 
-  // Make lowercase
-  formattedMessage = formattedMessage.toLowerCase();
+  const answer = completion.choices[0].message.content.toLowerCase();
 
-  // Define yes or no values
-  const yesReplies = ["yes", "y", "ναι", "ν"];
-  const noReplies = ["no", "n", "ου", "ουχι", "ο"];
-
-  let messageSaysYes;
-  if (yesReplies.includes(formattedMessage)) {
-    messageSaysYes = true;
-  } else if (noReplies.includes(formattedMessage)) {
-    messageSaysYes = false;
+  if (answer === "unknown") {
+    return answer;
   } else {
-    messageSaysYes = 'unknown';
+    return answer === "true";
   }
-
-  return messageSaysYes;
 }
