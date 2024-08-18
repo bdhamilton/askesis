@@ -21,6 +21,6 @@ jobs:
     - name: Pull GitHub updates
       run: |
         ssh -T ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-        cd /var/www/askesis
+        cd ${{ secrets.PROJECT_PATH }}
         git pull
         EOF
