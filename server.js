@@ -1152,7 +1152,6 @@ async function updatePracticeSession(student, hasPracticed) {
   const practiceDateFormatted = formatDate(new Date());
 
   const params = [student, practiceDateFormatted, hasPracticedFormatted];
-  console.log(params);
 
   const sql = `
     UPDATE practice_records
