@@ -33,6 +33,10 @@ const pool = new pg.Pool({
 const OpenAI = require("openai");
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
+// Set up Luxon
+const { DateTime, Settings } = require("luxon");
+Settings.defaultZone = "America/New_York";
+
 // Set up nodemailer
 const nodemailer = require('nodemailer');
 
@@ -340,16 +344,11 @@ app.get("/:year/:month/:day", async function (request, response) {
 // Add or update a record for a specific day
 app.post("/:year/:month/:day", async function (request, response) {
   // Build a date string from the URL
-  const dateString = `${request.params.year}-${request.params.month}-${request.params.day}`;
+  const requestDate = DateTime.local(+request.params.year, +request.params.month, +request.params.day).toFormat('yyyy-MM-dd');
+  const today = DateTime.now().toFormat('yyyy-MM-dd');
 
-  // If the date is in the future, ignore the request.
-  /**
-   * TODO: is there a better way to do this error handling?
-   */
-  const today = new Date();
-  const todayString = formatDate(today);
-  if (todayString < dateString) {
-    response.redirect(formatDateStringAsUrl(dateString));
+  if (today < requestDate) {
+    response.redirect(formatDateStringAsUrl(requestDate));
     return;
   }
 
@@ -359,7 +358,7 @@ app.post("/:year/:month/:day", async function (request, response) {
 
   // If the record has already been logged, we're updating the note.
   if (request.body.logged === "true") {
-    sqlParameters = [student.id, dateString, request.body.note];
+    sqlParameters = [student.id, requestDate, request.body.note];
     sql = `
     UPDATE practice_records
     SET
@@ -374,7 +373,7 @@ app.post("/:year/:month/:day", async function (request, response) {
     // If the student is adding a note to an earlier practice session
     // that they didn't log, mark that they didn't practice.
     let practiced = request.body.practiced || false;
-    sqlParameters = [student.id, dateString, request.body.note, practiced];
+    sqlParameters = [student.id, requestDate, request.body.note, practiced];
 
     sql = `
     INSERT INTO practice_records
@@ -390,7 +389,7 @@ app.post("/:year/:month/:day", async function (request, response) {
     }
 
     // Send the student to the date they just updated.
-    response.redirect(formatDateStringAsUrl(dateString));
+    response.redirect(formatDateStringAsUrl(requestDate));
   });
 });
 
@@ -874,10 +873,7 @@ async function getStudentList() {
 
   let records;
   try {
-    console.log('Connecting to the database...');
-    console.log('Running SQL query: ', sql);
     records = await pool.query(sql);
-    console.log('Query complete.');
   } catch (error) {
     console.error('Error fetching student list:', error);
     return [];
