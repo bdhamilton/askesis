@@ -761,12 +761,8 @@ async function getWeek(studentId) {
  * @returns {Object}
  */
 async function getDay(studentId, year, month, day) {
-  // Format the date
+  // Get the date
   const requestedDate = DateTime.local(+year, +month, +day);
-
-  // const date = new Date(year, month - 1, day);
-  // const dateString = formatDate(date);
-  // const longDate = date.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' });
 
   // Query the database
   const sql = `
@@ -782,7 +778,6 @@ async function getDay(studentId, year, month, day) {
     `;
   const sqlParameters = [studentId, requestedDate.toFormat('yyyy-MM-dd')];
   const records = await pool.query(sql, sqlParameters);
-
 
   // Construct the object
   const todaysRecord = { date: requestedDate, longDate: requestedDate.toLocaleString(DateTime.DATE_FULL) };
