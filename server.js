@@ -815,9 +815,7 @@ async function getRecent(studentId) {
   FROM practice_records
   WHERE
     student = $1 AND
-    practice_date BETWEEN 
-      $2 AND
-      $3
+    practice_date BETWEEN $2 AND $3
   ORDER BY practice_date;
   `;
 
@@ -1025,11 +1023,12 @@ async function remindStudents() {
         SELECT 1
         FROM practice_records pr
         WHERE pr.student = s.student_id
-        AND pr.practice_date = CURRENT_DATE
+        AND pr.practice_date = $1
       )
     ;
   `;
-  const records = await pool.query(sql);
+  const sqlParams = [DateTime.now().toFormat('yyyy-MM-dd')]
+  const records = await pool.query(sql, sqlParams);
 
   // Text each one asking if they've practiced.
   records.rows.forEach(student => {
@@ -1125,7 +1124,7 @@ async function processIncomingText(request, response) {
 
 async function addPracticeSession(student, hasPracticed, note, practiceDate) {
   const hasPracticedFormatted = hasPracticed ? 't' : 'f';
-  const practiceDateFormatted = practiceDate ? practiceDate : formatDate(new Date());
+  const practiceDateFormatted = practiceDate ? practiceDate : DateTime.now().toFormat('yyyy-MM-dd');
 
   const params = [student, practiceDateFormatted, note, hasPracticedFormatted];
   const sql = `
@@ -1139,7 +1138,7 @@ async function addPracticeSession(student, hasPracticed, note, practiceDate) {
 
 async function updatePracticeSession(student, hasPracticed) {
   const hasPracticedFormatted = hasPracticed ? 't' : 'f';
-  const practiceDateFormatted = formatDate(new Date());
+  const practiceDateFormatted = DateTime.now().toFormat('yyyy-MM-dd');
 
   const params = [student, practiceDateFormatted, hasPracticedFormatted];
 
@@ -1157,7 +1156,7 @@ async function updatePracticeSession(student, hasPracticed) {
 
 async function getTodaysRecordByPhoneNumber(phone) {
   // Grab the relevant info from database
-  const sqlParameters = [phone];
+  const sqlParameters = [phone, DateTime.now().toFormat('yyyy-MM-dd')];
   const sql = `
     SELECT
       s.student_id as id,
@@ -1172,7 +1171,7 @@ async function getTodaysRecordByPhoneNumber(phone) {
         note
       FROM practice_records
       WHERE
-        practice_date = CURRENT_DATE
+        practice_date = $2
     ) pr ON s.student_id = pr.student
     WHERE
       s.phone = $1
