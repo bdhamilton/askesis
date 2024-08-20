@@ -762,9 +762,11 @@ async function getWeek(studentId) {
  */
 async function getDay(studentId, year, month, day) {
   // Format the date
-  const date = new Date(year, month - 1, day);
-  const dateString = formatDate(date);
-  const longDate = date.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' });
+  const requestedDate = DateTime.local(+year, +month, +day);
+
+  // const date = new Date(year, month - 1, day);
+  // const dateString = formatDate(date);
+  // const longDate = date.toLocaleString('default', { month: 'long', day: 'numeric', year: 'numeric' });
 
   // Query the database
   const sql = `
@@ -778,12 +780,12 @@ async function getDay(studentId, year, month, day) {
       practice_date = ($2)
     ORDER BY practice_date
     `;
-  const sqlParameters = [studentId, dateString];
+  const sqlParameters = [studentId, requestedDate.toFormat('yyyy-MM-dd')];
   const records = await pool.query(sql, sqlParameters);
 
 
   // Construct the object
-  const todaysRecord = { date, longDate };
+  const todaysRecord = { date: requestedDate, longDate: requestedDate.toLocaleString(DateTime.DATE_FULL) };
 
   if (records.rows.length === 0) {
     todaysRecord.logged = false;
@@ -794,8 +796,7 @@ async function getDay(studentId, year, month, day) {
   }
 
   // Check if the requested date is in the future
-  const today = new Date();
-  if (date > today) {
+  if (requestedDate > DateTime.now()) {
     todaysRecord.future = true;
   }
 
@@ -1001,6 +1002,7 @@ const job = new cron.CronJob(
  * SEND SMS TO STUDENTS
  */
 const twilio = require("twilio");
+const { request } = require('http');
 
 const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
