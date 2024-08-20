@@ -803,6 +803,9 @@ async function getDay(studentId, year, month, day) {
  * @returns {Object} Object containing `today` and `yesterday` objects
  */
 async function getRecent(studentId) {
+  const yesterdaysDate = DateTime.now().minus({ days: 1 }).toFormat('yyyy-MM-dd');
+  const todaysDate = DateTime.now().toFormat('yyyy-MM-dd');  
+  
   // Get practice records from yesterday and today
   const sql = `
   SELECT 
@@ -811,21 +814,15 @@ async function getRecent(studentId) {
     note
   FROM practice_records
   WHERE
-    student = ($1) AND
+    student = $1 AND
     practice_date BETWEEN 
-      CURRENT_DATE - INTERVAL '1 day' AND
-      CURRENT_DATE
+      $2 AND
+      $3
   ORDER BY practice_date;
   `;
-  const sqlParameters = [studentId];
-  const records = await pool.query(sql, sqlParameters);
 
-  // Get date strings for today and yesterday
-  // and get them into YYYY-MM-DD format
-  const todaysDate = formatDate(new Date());
-  let yesterdaysDate = new Date(todaysDate + "T12:00:00");
-  yesterdaysDate.setDate(yesterdaysDate.getDate() - 1);
-  yesterdaysDate = formatDate(yesterdaysDate);
+  const sqlParameters = [studentId, yesterdaysDate, todaysDate];
+  const records = await pool.query(sql, sqlParameters);
 
   // Assume the student has _not_ logged either day.
   const today = { 
