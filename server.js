@@ -514,6 +514,7 @@ async function getCalendar(studentId, year, month, day) {
 
   // Today, set to midnight (so we can check past or future)
   const today = DateTime.now().startOf('day');
+  console.log(today);
 
   // The month we need to display
   year = +year || today.year;
