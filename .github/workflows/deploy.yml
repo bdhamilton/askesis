@@ -23,4 +23,5 @@ jobs:
         ssh -T ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
         cd ${{ secrets.PROJECT_PATH }}
         git pull
+        pm2 restart askesis
         EOF
