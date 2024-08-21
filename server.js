@@ -36,7 +36,6 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // Set up Luxon
 const { DateTime, Settings } = require("luxon");
 Settings.defaultZone = "America/New_York";
-const rightNow = DateTime.now();
 
 // Set up nodemailer
 const nodemailer = require('nodemailer');
@@ -234,11 +233,13 @@ app.get("/", async function(request, response) {
     return response.redirect('/login');
   }
 
+  const rightNow = DateTime.now();
+
   const student = request.user;
   const week = await getWeek(student.id);
   const recentPractice = await getRecent(student.id);
   const calendar = await getCalendar(student.id);
-  response.render("student", { week, recentPractice, calendar, student, rightNow: rightNow.toLocaleString(DateTime.TIME_SIMPLE)});
+  response.render("student", { week, recentPractice, calendar, student, rightNow: rightNow.toLocaleString(DateTime.TIME_SIMPLE) });
 });
 
 app.get("/account", async function(request, response) {
