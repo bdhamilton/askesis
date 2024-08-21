@@ -36,6 +36,7 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 // Set up Luxon
 const { DateTime, Settings } = require("luxon");
 Settings.defaultZone = "America/New_York";
+const rightNow = DateTime.now();
 
 // Set up nodemailer
 const nodemailer = require('nodemailer');
@@ -237,7 +238,7 @@ app.get("/", async function(request, response) {
   const week = await getWeek(student.id);
   const recentPractice = await getRecent(student.id);
   const calendar = await getCalendar(student.id);
-  response.render("student", { week, recentPractice, calendar, student });
+  response.render("student", { week, recentPractice, calendar, student, rightNow: rightNow.toLocaleString(DateTime.TIME_SIMPLE)});
 });
 
 app.get("/account", async function(request, response) {
@@ -514,7 +515,6 @@ async function getCalendar(studentId, year, month, day) {
 
   // Today, set to midnight (so we can check past or future)
   const today = DateTime.now().startOf('day');
-  console.log(today);
 
   // The month we need to display
   year = +year || today.year;
