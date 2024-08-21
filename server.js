@@ -513,32 +513,24 @@ async function getCalendar(studentId, year, month, day) {
   // [1] Construct the date information we'll need.
 
   // Today, set to midnight (so we can check past or future)
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  const today = DateTime.now().startOf('day');
 
   // The month we need to display
-  year = year || today.getFullYear();
-  month = month || today.getMonth() + 1;
-  const monthToDisplay = new Date(year, month - 1, 1);
-  const monthTitle = monthToDisplay.toLocaleString('default', { month: 'long', year: 'numeric' });
+  year = +year || today.year;
+  month = +month || today.month;
+  const monthToDisplay = DateTime.local(year, month, 1);
 
   // URLs for last month and next month
-  const lastMonth = new Date(monthToDisplay);
-  lastMonth.setMonth(monthToDisplay.getMonth() - 1);
-  const lastMonthParts = formatDate(lastMonth).split("-");
-  const lastMonthUrl = formatDateStringAsUrl(`${lastMonthParts[0]}-${lastMonthParts[1]}`);
-
-  const nextMonth = new Date(monthToDisplay);
-  nextMonth.setMonth(monthToDisplay.getMonth() + 1);
-  const nextMonthParts = formatDate(nextMonth).split("-");
-  const nextMonthUrl = formatDateStringAsUrl(`${nextMonthParts[0]}-${nextMonthParts[1]}`);
+  const lastMonth = monthToDisplay.minus({ months: 1 });
+  const lastMonthUrl = formatDateStringAsUrl(lastMonth.toFormat('yyyy-MM'));
+  const nextMonth = monthToDisplay.plus({ months: 1 });
+  const nextMonthUrl = formatDateStringAsUrl(nextMonth.toFormat('yyyy-MM'));
 
   // If a day has been specified, get that one too.
-  const selectedDate = day ? new Date(year, month - 1, day, 0, 0, 0, 0) : undefined;
+  const selectedDate = day ? DateTime.local(year, month, +day).startOf('day') : undefined;
 
   // The first day we'll need to include in the calendar
-  const nextDay = new Date(monthToDisplay);
-  nextDay.setDate(monthToDisplay.getDate() - monthToDisplay.getDay());
+  let nextDay = monthToDisplay.minus({ days: monthToDisplay.weekday });
 
   // [2] Get records from database and cue up the first record.
   const records = await getMonth(studentId, year, month);
@@ -547,35 +539,23 @@ async function getCalendar(studentId, year, month, day) {
 
   // [3] Find how many total days the calendar will include,
   // including trailing and leading days of last and next month.
-  
-  // Get the length of this month by asking for the 0th
-  // date of _next_ month. 
-  let calendarLength = new Date(year, month, 0).getDate();
-
-  // Add the trailing days of the previous month by 
-  // adding the day index of the first day of the month.
-  calendarLength = monthToDisplay.getDay() + calendarLength;
-
-  // Then round up to the next multiple of seven to add
-  // the leading days of the following month.
-  calendarLength = Math.ceil(calendarLength / 7) * 7;
+  let calendarLength = monthToDisplay.daysInMonth;
+  calendarLength += monthToDisplay.weekday;           // trailing days of previous month
+  calendarLength = Math.ceil(calendarLength / 7) * 7; // leading days of next month
 
   // [4] Build a calendar array
   const days = [];
 
   for (let i = 0; i < calendarLength; i++) {
-    // Get next day in ISO format
-    const nextDayString = formatDate(nextDay);
-
     // Initialize an object with this day's information.
     const calendarDay = {
-      fullDate: nextDayString,
-      day: nextDay.getDate(),
-      url: formatDateStringAsUrl(nextDayString)
+      fullDate: nextDay.toFormat('yyyy-MM-dd'),
+      day: nextDay.day,
+      url: formatDateStringAsUrl(nextDay.toFormat('yyyy-MM-dd'))
     };
 
     // If we're in the month we want to display, mark it.
-    if (nextDay.getMonth() === monthToDisplay.getMonth()) {
+    if (nextDay.month === monthToDisplay.month) {
       calendarDay.thisMonth = true;
     }
 
@@ -589,14 +569,13 @@ async function getCalendar(studentId, year, month, day) {
       calendarDay.today = true;
     }
 
+    // If this is the selected day, mark it.
     if (selectedDate && nextDay.toString() === selectedDate.toString()) {
       calendarDay.selected = true;
     }
 
     // If the student logged that day, use the logged info.
-    // TODO: is there a better way of handling the situation where
-    // the next record is undefined?
-    if (nextRecord && nextRecord.date === nextDayString) {
+    if (nextRecord && nextRecord.date === nextDay.toFormat('yyyy-MM-dd')) {
       calendarDay.logged = true;
       calendarDay.practiced = nextRecord.practiced;
       calendarDay.note = nextRecord.note;
@@ -613,11 +592,11 @@ async function getCalendar(studentId, year, month, day) {
 
     // Add the day to the calendar and increment the day
     days.push(calendarDay);
-    nextDay.setDate(nextDay.getDate() + 1);
+    nextDay = nextDay.plus({ days: 1 });
   }
 
   // [5] Return the calendar.
-  return { monthTitle, days, lastMonthUrl, nextMonthUrl };
+  return { monthTitle: monthToDisplay.monthLong, days, lastMonthUrl, nextMonthUrl };
 }
 
 /**
