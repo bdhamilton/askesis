@@ -239,7 +239,7 @@ app.get("/", async function(request, response) {
   const week = await getWeek(student.id);
   const recentPractice = await getRecent(student.id);
   const calendar = await getCalendar(student.id);
-  response.render("student", { week, recentPractice, calendar, student, rightNow: rightNow.toLocaleString(DateTime.TIME_SIMPLE) });
+  response.render("student", { week, recentPractice, calendar, student });
 });
 
 app.get("/account", async function(request, response) {
