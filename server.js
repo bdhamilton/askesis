@@ -1189,6 +1189,6 @@ async function askChatGPT(message) {
   if (answer === "unknown") {
     return answer;
   } else {
-    return answer === "true";
+    return answer === "yes";
   }
 }
