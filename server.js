@@ -1039,6 +1039,7 @@ async function processIncomingText(request, response) {
   // If it did, figure out whether they said yes or no.
   // (If I'm not sure, ask them again.)
   let smsResponse = askChatGPT(request.body.Body);
+  console.log('smsResponse: ' + smsResponse);
 
   if (smsResponse === 'unknown') {
     twiml.message(`I didn't catch that! Please respond with either ναί or οὐχί.`);
