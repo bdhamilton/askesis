@@ -1176,7 +1176,7 @@ async function askChatGPT(message) {
   const completion = await openai.chat.completions.create({
     model: "gpt-4o-mini",
     messages: [
-        { role: "system", content: "You assess if a student practiced based on their reply to 'Did you practice today?' in English or Greek. Reply 'yes' if they indicate practice, 'no' if not, and 'unknown' for unclear or nonsensical responses." },
+        { role: "system", content: "You assess if a student practiced based on their reply to 'Did you practice today?' in English or ancient Greek. Reply 'yes' if they indicate practice, 'no' if not, and 'unknown' for unclear or nonsensical responses." },
         {
             role: "user",
             content: `The student said "${message}". Did they practice?`,
@@ -1185,6 +1185,9 @@ async function askChatGPT(message) {
   });
 
   const answer = completion.choices[0].message.content.toLowerCase();
+
+  console.log('User Message: ' + message);
+  console.log('ChatGPT interpretation: ' + answer);
 
   if (answer === "unknown") {
     return answer;
