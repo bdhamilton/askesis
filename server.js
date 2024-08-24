@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS
     record_id SERIAL PRIMARY KEY,
     student INT 
       REFERENCES students (student_id),
-    practice_date DATE DEFAULT CURRENT_DATE,
+    practice_date DATE DEFAULT (CURRENT_DATE AT TIME ZONE 'your_timezone')::date,
     has_practiced BOOLEAN,
     note TEXT
   );
@@ -168,6 +168,8 @@ app.get("/teacher", async function(request, response) {
       console.error('Error fetching student list:', error);
       return response.status(500).send('Error fetching student list');
     }
+
+    console.log(students);
 
     // For each student:
     for (let i = 0; i < students.length; i++) {
@@ -686,45 +688,37 @@ async function getMonth(studentId, year, month) {
  */
 async function getWeek(studentId) {
   // Get record count for past two weeks.
-  /**
-   * TODO: is there a good way to do this in SQL, without two queries?
-   * I think I should be able to do a union, but that's slightly above
-   * my pay grade at the moment. I'll return to that.
-   */
-  const sqlParams = [studentId];
-  const sqlPastWeek = `
-  SELECT 
-    COUNT(*)
-  FROM practice_records
-  WHERE
-    student = ($1) AND
-    has_practiced = true AND
-    practice_date BETWEEN (CURRENT_TIMESTAMP - Interval '7 days') AND CURRENT_TIMESTAMP
-  ;`;
-  const sqlPriorWeek = `
-    SELECT 
-    COUNT(*)
-  FROM practice_records
-  WHERE
-    student = ($1) AND
-    has_practiced = true AND
-    practice_date 
-      BETWEEN (CURRENT_TIMESTAMP - Interval '14 days') 
-      AND (CURRENT_TIMESTAMP - Interval '7 days')
-  ;`;
+  const sqlParams = [
+    studentId, 
+    DateTime.now().toFormat('yyyy-MM-dd'), 
+    DateTime.now().minus({ days: 7 }).toFormat('yyyy-MM-dd'), 
+    DateTime.now().minus({ days: 14 }).toFormat('yyyy-MM-dd')
+  ];
 
-  const pastWeek = await pool.query(sqlPastWeek, sqlParams);
-  const priorWeek = await pool.query(sqlPriorWeek, sqlParams);
+  const sqlPracticeCount = `
+  SELECT 
+    SUM(CASE WHEN practice_date BETWEEN ($3) AND ($2) THEN 1 ELSE 0 END) AS past_week,
+    SUM(CASE WHEN practice_date BETWEEN ($4) AND ($3) THEN 1 ELSE 0 END) AS prior_week
+  FROM practice_records
+  WHERE
+    student = ($1) AND
+    has_practiced = true AND
+    practice_date BETWEEN ($4) AND ($2);
+  `;
+
+  const practiceCount = await pool.query(sqlPracticeCount, sqlParams);
+  const pastWeekCount = practiceCount.rows[0].past_week || 0;
+  const priorWeekCount = practiceCount.rows[0].prior_week || 0;
 
   // Grab the past week's count and initialize a week object.
   const week = {
-    count: pastWeek.rows[0].count,
+    count: pastWeekCount,
   }
 
   // Specify the trend
-  if (pastWeek.rows[0].count > priorWeek.rows[0].count) {
+  if (pastWeekCount > priorWeekCount) {
     week.trend = "up";
-  } else if (pastWeek.rows[0].count < priorWeek.rows[0].count) {
+  } else if (pastWeekCount < priorWeekCount) {
     week.trend = "down";
   } else {
     week.trend = "even";
