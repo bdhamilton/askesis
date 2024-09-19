@@ -53,12 +53,12 @@ pool.query(`
 CREATE TABLE IF NOT EXISTS
   students (
     student_id SERIAL PRIMARY KEY,
-    first_name TEXT,
+    first_name TEXT NOT NULL,
     last_name TEXT,
-    email TEXT UNIQUE,
+    email TEXT UNIQUE NOT NULL,
     phone TEXT UNIQUE,
-    hashed_password BYTEA,
-    salt BYTEA
+    hashed_password BYTEA NOT NULL,
+    salt BYTEA NOT NULL
   );
 `);
 
