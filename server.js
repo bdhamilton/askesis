@@ -973,17 +973,18 @@ const accountSid = process.env.TWILIO_ACCOUNT_SID;
 const authToken = process.env.TWILIO_AUTH_TOKEN;
 const sms = twilio(accountSid, authToken);
 
-const reminderJob = new cron.CronJob(
-	'0 0 17 * * *',      // cronTime
-	function() {          // onTick
-    remindStudents();
-  }, 
-	null,                 // onComplete
-	true,                 // start
-	'America/New_York',    // timeZone
-  null,
-  false                   // Run on init
-);
+// REMINDERS DISABLED
+// const reminderJob = new cron.CronJob(
+// 	'0 0 17 * * *',      // cronTime
+// 	function() {          // onTick
+//     remindStudents();
+//   }, 
+// 	null,                 // onComplete
+// 	true,                 // start
+// 	'America/New_York',    // timeZone
+//   null,
+//   false                   // Run on init
+// );
 
 async function remindStudents() {
   // Get phone numbers for students who haven't logged yet today.
