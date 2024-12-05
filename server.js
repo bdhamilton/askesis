@@ -1025,6 +1025,22 @@ async function processIncomingText(request, response) {
   const twiml = new MessagingResponse();
   const student = await getTodaysRecordByPhoneNumber(request.body.From);
 
+  // If anyone texts this number, email me.
+  // (This is just while messaging is supposed to be disabled.)
+  const message = {
+    from: "Askesis <bdhamilton@gmail.com>",
+    to: "bdhamilton@gmail.com",
+    subject: "Someone texted!",
+    text: `${student.name} texted the Askesis number, saying "${request.body.Body}"`,
+  };
+
+  transporter.sendMail(message, (error, info) => {
+    if (error) {
+      return console.log(error);
+    }
+  });
+
+
   // If the text didn't come from one of my students, let them know.
   if (!student) {
     twiml.message(`I don't know this number! If you're one of my students, log into the app and add your number to your account.`);
